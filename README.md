@@ -9,9 +9,9 @@ CHIMERA is a MICCAI 2025 challenge consisting of **three multimodal tasks**:
 
 | Task | Description                                                                 |
 |------|-----------------------------------------------------------------------------|
-| 1    | Predict biochemical recurrence in prostate cancer using histology + MRI + clinical data |
+| 1    | Predict biochemical recurrence in prostate cancer using H&E + MRI + clinical data |
 | 2    | Predict BCG response subtype (BRS) in bladder cancer from H&E + clinical data |
-| 3    | Predict recurrence in NMIBC using histology + RNA-seq + clinical dat          |
+| 3    | Predict recurrence in NMIBC using H&E + RNA-seq + clinical dat          |
 
 All tasks involve gigapixel WSIs, structured data, and standard clinical endpoints.
 
