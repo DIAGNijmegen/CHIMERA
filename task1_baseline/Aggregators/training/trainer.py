@@ -104,11 +104,13 @@ def train(datasets, args, mode='classification'):
         if 'val' in datasets.keys():
             print('#' * 11, f'VAL Epoch: {epoch}', '#' * 11)
             if mode == 'classification':
+                # During training validation, show per-batch progress
                 val_results, _ = validate_classification(model, datasets['val'], loss_fn,
-                                                         print_every=args.print_every, verbose=True)
+                                                         print_every=args.print_every, verbose=True, show_batch_progress=True)
             elif mode == 'survival':
+                # During training validation, show per-batch progress
                 val_results, _ = validate_survival(model, datasets['val'], loss_fn,
-                                                   print_every=args.print_every, verbose=True)
+                                                   print_every=args.print_every, verbose=True, show_batch_progress=True)
 
             writer = log_dict_tensorboard(writer, val_results, 'val/', epoch)
 
@@ -140,16 +142,16 @@ def train(datasets, args, mode='classification'):
     for k, loader in datasets.items():
         print(f'End of training. Evaluating on Split {k.upper()}...:')
         if mode == 'classification':
+            # Suppress per-batch output during final evaluation, but show final summary
             results[k], dumps[k] = validate_classification(model, loader, loss_fn, print_every=args.print_every,
-                                                           dump_results=True, verbose=False)
+                                                           dump_results=True, verbose=1, show_batch_progress=False)
         elif mode == 'survival':
+            # Suppress per-batch output during final evaluation, but show final summary
             results[k], dumps[k] = validate_survival(model, loader, loss_fn, print_every=args.print_every,
-                                                     dump_results=True, verbose=False)
+                                                     dump_results=True, verbose=1, show_batch_progress=False)
 
-        if k == 'train':
-            _ = results.pop('train')  # Train results by default are not saved in the summary, but train dumps are
-        else:
-            log_dict_tensorboard(writer, results[k], f'final/{k}_', 0, verbose=True)
+        # Log all results including train split
+        log_dict_tensorboard(writer, results[k], f'final/{k}_', 0, verbose=True)
 
     writer.close()
     return results, dumps
@@ -213,7 +215,8 @@ def validate_classification(model, loader,
                             loss_fn=None,
                             print_every=50,
                             dump_results=False,
-                            verbose=1):
+                            verbose=1,
+                            show_batch_progress=True):
     model.eval()
     meters = {'bag_size': AverageMeter(), 'cls_acc': AverageMeter()}
     acc_meter = meters['cls_acc']
@@ -244,7 +247,8 @@ def validate_classification(model, loader,
         all_probs.append(torch.softmax(logits, dim=-1).cpu().numpy())
         all_labels.append(label.cpu().numpy())
 
-        if verbose and (((batch_idx + 1) % print_every == 0) or (batch_idx == len(loader) - 1)):
+        # Only show per-batch progress if show_batch_progress is True (i.e., during training validation)
+        if verbose and show_batch_progress and (((batch_idx + 1) % print_every == 0) or (batch_idx == len(loader) - 1)):
             msg = [f"avg_{k}: {meter.avg:.4f}" for k, meter in meters.items()]
             msg = f"batch {batch_idx}\t" + "\t".join(msg)
             print(msg)
@@ -277,11 +281,20 @@ def validate_classification(model, loader,
 
 ## SURVIVAL
 def train_loop_survival(model, loader, optimizer, lr_scheduler, loss_fn=None, in_dropout=0.0, print_every=50,
-                        accum_steps=32):
+                        accum_steps=1):
     model.train()
     meters = {'bag_size': AverageMeter()}
     bag_size_meter = meters['bag_size']
     all_risk_scores, all_censorships, all_event_times = [], [], []
+    
+    # For Cox loss, we need to accumulate multiple samples before computing loss
+    is_cox_loss = isinstance(loss_fn, CoxLoss)
+    
+    if is_cox_loss:
+        # Accumulate samples for Cox loss computation
+        accumulated_outputs = []
+        accumulated_times = []
+        accumulated_censorships = []
     
     for batch_idx, batch in enumerate(loader):
         data = batch['img'].to(device)
@@ -292,29 +305,90 @@ def train_loop_survival(model, loader, optimizer, lr_scheduler, loss_fn=None, in
         event_time = batch['survival_time'].to(device)
         censorship = batch['censorship'].to(device)
         attn_mask = batch['attn_mask'].to(device) if ('attn_mask' in batch) else None
-        model_kwargs = {'attn_mask': attn_mask, 'label': label, 'censorship': censorship, 'loss_fn': loss_fn}
-        out, log_dict = model(data, model_kwargs)
+        
+        if is_cox_loss:
+            # For Cox loss, get model output without computing loss yet
+            model_kwargs = {'attn_mask': attn_mask, 'label': label, 'censorship': censorship, 'loss_fn': None}
+            out, log_dict = model(data, model_kwargs)
+            
+            # Accumulate outputs for batch processing
+            if 'logits' in out:
+                accumulated_outputs.append(out['logits'])
+            else:
+                raise ValueError(f"Model output must contain 'logits', got keys: {list(out.keys())}")
+                
+            accumulated_times.append(event_time)
+            accumulated_censorships.append(censorship)
+            
+            # Initialize loss tracking - set to None initially for Cox losses during accumulation
+            out['loss'] = None
+            if 'loss' not in log_dict:
+                log_dict['loss'] = 0.0
+                
+        else:
+            # For non-Cox losses, compute normally
+            model_kwargs = {'attn_mask': attn_mask, 'label': label, 'censorship': censorship, 'loss_fn': loss_fn}
+            out, log_dict = model(data, model_kwargs)
 
-        if out['loss'] is None:
-            continue
-
-        # Get loss + backprop
-        loss = out['loss']
-        loss = loss / accum_steps
-        loss.backward()
+        # Process accumulated Cox loss every accum_steps or at end
+        if is_cox_loss and ((batch_idx + 1) % accum_steps == 0 or batch_idx == len(loader) - 1):
+            if accumulated_outputs:
+                # Combine accumulated samples
+                combined_outputs = torch.cat(accumulated_outputs, dim=0)
+                combined_times = torch.cat(accumulated_times, dim=0)
+                combined_censorships = torch.cat(accumulated_censorships, dim=0)
+                
+                # Compute Cox loss on accumulated batch
+                cox_loss_dict = loss_fn(logits=combined_outputs, 
+                                      times=combined_times, 
+                                      censorships=combined_censorships)
+                loss = cox_loss_dict['loss']
+                
+                # Update log_dict with actual loss
+                log_dict.update(cox_loss_dict)
+                out['loss'] = loss
+                
+                # Clear accumulation
+                accumulated_outputs = []
+                accumulated_times = []
+                accumulated_censorships = []
+            else:
+                # No accumulated outputs - this shouldn't happen but handle gracefully
+                out['loss'] = torch.tensor(0.0, device=device, requires_grad=True)
+        
+        # Handle loss computation and backprop
+        current_loss = out.get('loss', None)
+        if current_loss is not None and current_loss != 0:
+            loss = current_loss
+            if not is_cox_loss:  # For non-Cox losses, apply accumulation division
+                loss = loss / accum_steps
+            loss.backward()
+            
+        # Optimizer step
         if (batch_idx + 1) % accum_steps == 0:
             optimizer.step()
             lr_scheduler.step()
             optimizer.zero_grad()
 
         # End of iteration survival-specific metrics to calculate / log
-        all_risk_scores.append(out['risk'].detach().cpu().numpy())
+        # Only collect metrics when we have valid output
+        if 'risk' in out:
+            all_risk_scores.append(out['risk'].detach().cpu().numpy())
+        elif 'logits' in out:
+            # For Cox loss, logits are log risks, so convert to risk
+            all_risk_scores.append(torch.exp(out['logits']).detach().cpu().numpy())
+        else:
+            # Fallback for accumulation phase
+            all_risk_scores.append(torch.zeros(1, 1).numpy())
+                
         all_censorships.append(censorship.cpu().numpy())
         all_event_times.append(event_time.cpu().numpy())
 
         for key, val in log_dict.items():
             if key not in meters:
                 meters[key] = AverageMeter()
+            if isinstance(val, torch.Tensor):
+                val = val.item()
             meters[key].update(val, n=len(data))
 
         bag_size_meter.update(data.size(1), n=len(data))
@@ -333,6 +407,7 @@ def train_loop_survival(model, loader, optimizer, lr_scheduler, loss_fn=None, in
     results = {k: meter.avg for k, meter in meters.items()}
     results.update({'c_index': c_index})
     results['lr'] = optimizer.param_groups[0]['lr']
+    
     return results
 
 
@@ -342,7 +417,9 @@ def validate_survival(model, loader,
                       print_every=50,
                       dump_results=False,
                       recompute_loss_at_end=True,
-                      verbose=1):
+                      verbose=1,
+                      split_name=None,
+                      show_batch_progress=True):
     model.eval()
     meters = {'bag_size': AverageMeter()}
     bag_size_meter = meters['bag_size']
@@ -369,7 +446,8 @@ def validate_survival(model, loader,
         all_censorships.append(censorship.cpu().numpy())
         all_event_times.append(event_time.cpu().numpy())
 
-        if verbose and (((batch_idx + 1) % print_every == 0) or (batch_idx == len(loader) - 1)):
+        # Only show per-batch progress if show_batch_progress is True (i.e., during training validation)
+        if verbose and show_batch_progress and (((batch_idx + 1) % print_every == 0) or (batch_idx == len(loader) - 1)):
             msg = [f"avg_{k}: {meter.avg:.4f}" for k, meter in meters.items()]
             msg = f"batch {batch_idx}\t" + "\t".join(msg)
             print(msg)
