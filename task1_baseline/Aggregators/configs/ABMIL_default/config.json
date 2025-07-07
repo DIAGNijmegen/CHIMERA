@@ -1,9 +1,10 @@
 {
   "gate": true,
-  "in_dim": 768,
+  "in_dim": 1024,
   "n_classes": 2,
   "embed_dim": 512,
   "attn_dim": 384,
   "n_fc_layers": 1,
-  "dropout": 0.25
+  "dropout": 0.25,
+  "fusion_dim": 320
 }

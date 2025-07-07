@@ -31,6 +31,7 @@ class WSISurvivalDataset(Dataset):
                  label_bins=None,
                  bag_size=0,
                  include_surv_t0=True,
+                 mri_feature_path=None,
                  **kwargs):
         """
         Args:
@@ -72,6 +73,7 @@ class WSISurvivalDataset(Dataset):
         self.n_label_bins = n_label_bins
         self.label_bins = None
         self.bag_size = bag_size
+        self.mri_feature_path = mri_feature_path
 
         self.validate_survival_dataset()
         self.idx2sample_df = pd.DataFrame({'sample_id': self.data_df[sample_col].astype(str).unique()})
@@ -173,6 +175,29 @@ class WSISurvivalDataset(Dataset):
     def get_sample_id(self, idx):
         return self.idx2sample_df.loc[idx]['sample_id']
 
+    def get_mri_features(self, idx):
+        """Load MRI features for a given sample."""
+        if self.mri_feature_path is None:
+            return None
+        
+        sample_id = self.get_sample_id(idx)
+        # Construct MRI feature file path: [case_id]_0001.pt
+        mri_file_path = os.path.join(self.mri_feature_path, f"{sample_id}_0001_features.pt")
+        
+        if os.path.exists(mri_file_path):
+            try:
+                mri_features = torch.load(mri_file_path)
+                # Ensure the features are in the correct shape (320,)
+                if len(mri_features.shape) > 1:
+                    mri_features = mri_features.squeeze()
+                return mri_features
+            except Exception as e:
+                print(f"Error loading MRI features for {sample_id}: {e}")
+                return None
+        else:
+            print(f"MRI feature file not found: {mri_file_path}")
+            return None
+
     def get_feat_paths(self, idx):
         feat_paths = self.data_df.loc[self.get_sample_id(idx), 'fpath']
         if isinstance(feat_paths, str):
@@ -226,11 +251,18 @@ class WSISurvivalDataset(Dataset):
         # apply sampling if needed, return attention mask if sampling is applied else None
         all_features, all_coords, attn_mask = apply_sampling(self.bag_size, all_features, all_coords)
 
+        # Load MRI features
+        mri_features = self.get_mri_features(idx)
+
         out = {'img': all_features,
             'coords': all_coords,
             'survival_time': torch.Tensor([survival_time]),
             'censorship': torch.Tensor([censorship]),
             'label': torch.Tensor([label])}
+
+        # Add MRI features if available
+        if mri_features is not None:
+            out['mri_feature'] = mri_features
 
         if attn_mask is not None:
             out['attn_mask'] = attn_mask

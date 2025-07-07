@@ -23,8 +23,7 @@ class PretrainedConfig:
     def from_pretrained(cls, config_path: Union[str, os.PathLike], update_dict={}):
         config_dict = json.load(open(config_path))
         for key in update_dict:
-            if key in config_dict:
-                config_dict[key] = update_dict[key]
+            config_dict[key] = update_dict[key]  # Always update, regardless of whether key exists
         config = cls(**config_dict)
         return config
 
@@ -57,6 +56,7 @@ class ABMILConfig(PretrainedConfig):
     attn_dim: int = 384
     n_fc_layers: int = 1
     dropout: float = 0.25
+    fusion_dim: int = 0  # Dimension for fusion features (e.g., MRI features)
 
 @dataclass
 class OTConfig(PretrainedConfig):

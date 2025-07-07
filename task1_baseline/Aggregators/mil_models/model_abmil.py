@@ -89,17 +89,3 @@ class ABMIL(nn.Module):
             raise NotImplementedError("Not Implemented!")
 
         return results_dict, log_dict
-
-
-# class ABMILSurv(ABMIL):
-
-#     def __init__(self, config: ABMILConfig):
-#         super().__init__(config)
-
-#     def forward(self, h, attn_mask=None, label=None, censorship=None, loss_fn=None):
-#         out = self.forward_no_loss(h, attn_mask=attn_mask)
-#         logits = out['logits']
-
-#         results_dict, log_dict = process_surv(logits, label, censorship, loss_fn)
-
-#         return results_dict, log_dict

@@ -70,6 +70,7 @@ def main(args):
                         label_bins=None,
                         bag_size=args.train_bag_size,
                         shuffle=True,
+                        mri_feature_path=args.mri_feature_path,
                         )
 
     # use the whole bag at test time
@@ -80,6 +81,7 @@ def main(args):
                       label_bins=None,
                       bag_size=args.val_bag_size,
                       shuffle=False,
+                      mri_feature_path=args.mri_feature_path,
                       )
 
     all_results, all_dumps = {}, {}
@@ -200,6 +202,8 @@ parser.add_argument('--in_dim', default=1024, type=int,
                     help='dim of input features')
 parser.add_argument('--in_dropout', default=0.1, type=float,
                     help='Probability of dropping out input features.')
+parser.add_argument('--mri_feature_path', type=str, default=None,
+                    help='Path to directory containing pre-created MRI features (.pt files)')
 parser.add_argument('--bag_size', type=int, default=-1)
 parser.add_argument('--train_bag_size', type=int, default=-1)
 parser.add_argument('--val_bag_size', type=int, default=-1)

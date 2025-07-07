@@ -300,6 +300,11 @@ def train_loop_survival(model, loader, optimizer, lr_scheduler, loss_fn=None, in
         data = batch['img'].to(device)
         label = batch['label'].to(device)
 
+        # Load MRI features if available
+        mri_features = None
+        if 'mri_feature' in batch:
+            mri_features = batch['mri_feature'].to(device)
+
         if in_dropout:
             data = F.dropout(data, p=in_dropout)
         event_time = batch['survival_time'].to(device)
@@ -309,7 +314,7 @@ def train_loop_survival(model, loader, optimizer, lr_scheduler, loss_fn=None, in
         if is_cox_loss:
             # For Cox loss, get model output without computing loss yet
             model_kwargs = {'attn_mask': attn_mask, 'label': label, 'censorship': censorship, 'loss_fn': None}
-            out, log_dict = model(data, model_kwargs)
+            out, log_dict = model(data, additional_embeddings=mri_features, model_kwargs=model_kwargs)
             
             # Accumulate outputs for batch processing
             if 'logits' in out:
@@ -328,7 +333,7 @@ def train_loop_survival(model, loader, optimizer, lr_scheduler, loss_fn=None, in
         else:
             # For non-Cox losses, compute normally
             model_kwargs = {'attn_mask': attn_mask, 'label': label, 'censorship': censorship, 'loss_fn': loss_fn}
-            out, log_dict = model(data, model_kwargs)
+            out, log_dict = model(data, additional_embeddings=mri_features, model_kwargs=model_kwargs)
 
         # Process accumulated Cox loss every accum_steps or at end
         if is_cox_loss and ((batch_idx + 1) % accum_steps == 0 or batch_idx == len(loader) - 1):
@@ -430,11 +435,16 @@ def validate_survival(model, loader,
         data = batch['img'].to(device)
         label = batch['label'].to(device)
 
+        # Load MRI features if available
+        mri_features = None
+        if 'mri_feature' in batch:
+            mri_features = batch['mri_feature'].to(device)
+
         event_time = batch['survival_time'].to(device)
         censorship = batch['censorship'].to(device)
         attn_mask = batch['attn_mask'].to(device) if ('attn_mask' in batch) else None
         model_kwargs = {'attn_mask': attn_mask, 'label': label, 'censorship': censorship, 'loss_fn': loss_fn}
-        out, log_dict = model(data, model_kwargs)
+        out, log_dict = model(data, additional_embeddings=mri_features, model_kwargs=model_kwargs)
 
         # End of iteration survival-specific metrics to calculate / log
         bag_size_meter.update(data.size(1), n=len(data))

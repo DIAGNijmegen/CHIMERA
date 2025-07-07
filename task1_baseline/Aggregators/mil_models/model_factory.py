@@ -1,5 +1,5 @@
 import os
-from mil_models import ABMIL
+from mil_models import ABMIL, ABMIL_FUSION
 from mil_models import ABMILConfig
 
 import pdb
@@ -37,6 +37,10 @@ def create_downstream_model(args, mode='classification', config_dir='/data/tempo
     else:
         update_dict = {'in_dim': args.in_dim}
 
+    # Always add fusion_dim for ABMIL models to support fusion capabilities
+    if model_type == 'ABMIL':
+        update_dict.update({'fusion_dim': 320})  # MRI feature dimension
+
     if mode == 'classification':
         update_dict.update({'n_classes': args.n_classes})
     elif mode == 'survival':
@@ -51,7 +55,9 @@ def create_downstream_model(args, mode='classification', config_dir='/data/tempo
     
     if model_type == 'ABMIL':
         config = ABMILConfig.from_pretrained(config_path, update_dict=update_dict)
-        model = ABMIL(config=config, mode=mode)
+        print(f"Model factory: Config loaded with fusion_dim = {getattr(config, 'fusion_dim', 'NOT FOUND')}")
+        print(f"Model factory: Update dict = {update_dict}")
+        model = ABMIL_FUSION(config=config, mode=mode)  # Use fusion model by default
     # Prototype-based models will choose from the following
     elif model_type == 'LinearEmb':
         config = LinearEmbConfig.from_pretrained(config_path, update_dict=update_dict)
