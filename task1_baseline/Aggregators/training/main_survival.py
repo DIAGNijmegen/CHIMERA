@@ -32,6 +32,32 @@ def build_datasets(csv_splits, model_type, batch_size=1, num_workers=2, train_kw
     """
     dataset_splits = {}
     label_bins = None
+    
+    # Initialize clinical data processor if path is provided
+    clinical_processor = None
+    if 'clinical_data_path' in train_kwargs and train_kwargs['clinical_data_path'] is not None:
+        from wsi_datasets.clinical_processor import ClinicalDataProcessor
+        print(f"Initializing clinical data processor with path: {train_kwargs['clinical_data_path']}")
+        clinical_processor = ClinicalDataProcessor(clinical_data_path=train_kwargs['clinical_data_path'])
+        
+        # Fit the processor on the training set case IDs
+        if 'train' in csv_splits:
+            print("Fitting clinical data processor on training set...")
+            train_case_ids = csv_splits['train']['case_id'].unique().tolist()
+            clinical_processor.fit(train_case_ids)
+            
+            # Update clinical dimension in all dataset kwargs
+            train_kwargs['clinical_processor'] = clinical_processor
+            val_kwargs['clinical_processor'] = clinical_processor
+    
+    if clinical_processor is not None:
+        # Add clinical processor to args for model initialization
+        args.clinical_processor = clinical_processor
+        
+        # Set the clinical dimension in args based on processor output dimension
+        args.clinical_dim = clinical_processor.output_dim
+        print(f"Clinical processor initialized with output dimension: {args.clinical_dim}")
+    
     for k in csv_splits.keys(): # ['train', 'val', 'test']
         df = csv_splits[k]
         dataset_kwargs = train_kwargs.copy() if (k == 'train') else val_kwargs.copy()
@@ -71,6 +97,7 @@ def main(args):
                         bag_size=args.train_bag_size,
                         shuffle=True,
                         mri_feature_path=args.mri_feature_path,
+                        clinical_data_path=args.clinical_data_path,
                         )
 
     # use the whole bag at test time
@@ -82,6 +109,7 @@ def main(args):
                       bag_size=args.val_bag_size,
                       shuffle=False,
                       mri_feature_path=args.mri_feature_path,
+                      clinical_data_path=args.clinical_data_path,
                       )
 
     all_results, all_dumps = {}, {}
@@ -149,7 +177,7 @@ def main(args):
 # Generic training settings
 parser = argparse.ArgumentParser(description='Configurations for WSI Training')
 ### optimizer settings ###
-parser.add_argument('--max_epochs', type=int, default=20,
+parser.add_argument('--max_epochs', type=int, default=10,
                     help='maximum number of epochs to train (default: 20)')
 parser.add_argument('--lr', type=float, default=1e-4,
                     help='learning rate')
@@ -204,6 +232,8 @@ parser.add_argument('--in_dropout', default=0.1, type=float,
                     help='Probability of dropping out input features.')
 parser.add_argument('--mri_feature_path', type=str, default=None,
                     help='Path to directory containing pre-created MRI features (.pt files)')
+parser.add_argument('--clinical_data_path', type=str, default=None,
+                    help='Path to directory containing clinical data files (.json files)')
 parser.add_argument('--bag_size', type=int, default=-1)
 parser.add_argument('--train_bag_size', type=int, default=-1)
 parser.add_argument('--val_bag_size', type=int, default=-1)
@@ -215,7 +245,7 @@ parser.add_argument('--nll_alpha', type=float, default=0,
 # experiment task / label args ###
 parser.add_argument('--exp_code', type=str, default=None,
                     help='experiment code for saving results')
-parser.add_argument('--task', type=str, default='bcr_survival_task')
+parser.add_argument('--task', type=str, default='MM_bcr_survival_task2')
 parser.add_argument('--target_col', type=str, default='bcr_survival_months')
 parser.add_argument('--n_label_bins', type=int, default=4,
                     help='number of bins for event time discretization')
@@ -244,8 +274,8 @@ if __name__ == "__main__":
     print('task: ', args.task)
     args.split_dir = j_('splits', args.split_dir)
     print('split_dir: ', args.split_dir)
-    split_num = args.split_dir.split('/')[2].split('_k=')
-    args.split_name_clean = args.split_dir.split('/')[2].split('_k=')[0]
+    split_num = args.split_dir.split('/')[-1].split('_')
+    args.split_name_clean = split_num[0]
     if len(split_num) > 1:
         args.split_k = int(split_num[1])
     else:

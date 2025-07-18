@@ -39,8 +39,19 @@ def create_downstream_model(args, mode='classification', config_dir='/data/tempo
 
     # Always add fusion_dim for ABMIL models to support fusion capabilities
     if model_type == 'ABMIL':
-        update_dict.update({'fusion_dim': 320})  # MRI feature dimension
+        update_dict.update({
+            'fusion_dim': 320,  # MRI feature dimension
+            'clinical_dim': 64,  # Default clinical feature dimension
+            'clinical_hidden_dim': 64,  # Default hidden dimension for clinical MLP
+            'clinical_layers': 2  # Default number of layers in clinical MLP
+        })
 
+    # Set clinical dimension based on the clinical processor if available
+    if model_type == 'ABMIL' and hasattr(args, 'clinical_processor') and args.clinical_processor is not None:
+        clinical_dim = args.clinical_processor.output_dim
+        update_dict.update({'clinical_dim': clinical_dim})
+        print(f"Setting clinical_dim to {clinical_dim} based on clinical processor")
+    
     if mode == 'classification':
         update_dict.update({'n_classes': args.n_classes})
     elif mode == 'survival':

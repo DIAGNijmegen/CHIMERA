@@ -1,8 +1,0 @@
-{
-  "in_dim": 768,
-  "n_classes": 2,
-  "out_size": 8,
-  "load_proto": false,
-  "proto_path": ".",
-  "fix_proto": false
-}

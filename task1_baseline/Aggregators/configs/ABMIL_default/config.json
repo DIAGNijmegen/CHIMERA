@@ -6,5 +6,9 @@
   "attn_dim": 384,
   "n_fc_layers": 1,
   "dropout": 0.25,
-  "fusion_dim": 320
+  "fusion_dim": 320,
+  "clinical_dim": 64,
+  "clinical_hidden_dim": 64,
+  "clinical_layers": 2,
+  "post_attention_dim": 128
 }

@@ -13,6 +13,7 @@ import sys
 from torch.utils.data import Dataset
 import h5py
 from .dataset_utils import apply_sampling
+from .clinical_processor import ClinicalDataProcessor
 sys.path.append('../')
 from utils.pandas_helper_funcs import df_sdir, series_diff
 
@@ -32,6 +33,8 @@ class WSISurvivalDataset(Dataset):
                  bag_size=0,
                  include_surv_t0=True,
                  mri_feature_path=None,
+                 clinical_data_path=None,
+                 clinical_processor=None,
                  **kwargs):
         """
         Args:
@@ -50,6 +53,14 @@ class WSISurvivalDataset(Dataset):
         self.survival_time_col = survival_time_col
         self.censorship_col = censorship_col
         self.include_surv_t0 = include_surv_t0
+        self.mri_feature_path = mri_feature_path
+        self.clinical_data_path = clinical_data_path
+        self.clinical_processor = clinical_processor
+
+        # Initialize clinical processor if provided with a path but no processor
+        if self.clinical_data_path is not None and self.clinical_processor is None:
+            self.clinical_processor = ClinicalDataProcessor(clinical_data_path=self.clinical_data_path)
+            # We'll fit the processor in the __getitem__ method when needed
 
         is_nan_censorship = self.data_df[self.censorship_col].isna()
         if sum(is_nan_censorship) > 0:
@@ -73,7 +84,6 @@ class WSISurvivalDataset(Dataset):
         self.n_label_bins = n_label_bins
         self.label_bins = None
         self.bag_size = bag_size
-        self.mri_feature_path = mri_feature_path
 
         self.validate_survival_dataset()
         self.idx2sample_df = pd.DataFrame({'sample_id': self.data_df[sample_col].astype(str).unique()})
@@ -198,6 +208,24 @@ class WSISurvivalDataset(Dataset):
             print(f"MRI feature file not found: {mri_file_path}")
             return None
 
+    def get_clinical_features(self, idx):
+        """Load clinical features for a given sample."""
+        if self.clinical_processor is None:
+            return None
+        
+        sample_id = self.get_sample_id(idx)
+        
+        # Transform the clinical data for this sample
+        try:
+            clinical_features = self.clinical_processor.transform(sample_id)
+            return clinical_features
+        except Exception as e:
+            print(f"Error getting clinical features for {sample_id}: {e}")
+            # Return zeros with the right dimension if transformation fails
+            if hasattr(self.clinical_processor, 'output_dim') and self.clinical_processor.output_dim is not None:
+                return torch.zeros(self.clinical_processor.output_dim)
+            return None
+
     def get_feat_paths(self, idx):
         feat_paths = self.data_df.loc[self.get_sample_id(idx), 'fpath']
         if isinstance(feat_paths, str):
@@ -266,6 +294,10 @@ class WSISurvivalDataset(Dataset):
 
         if attn_mask is not None:
             out['attn_mask'] = attn_mask
+
+        # Get clinical features
+        clinical_features = self.get_clinical_features(idx)
+        out['clinical_feature'] = clinical_features
 
         return out
     

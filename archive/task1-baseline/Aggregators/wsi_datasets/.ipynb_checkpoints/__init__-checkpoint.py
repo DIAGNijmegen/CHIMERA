@@ -1,3 +1,0 @@
-from .wsi_classification import WSIClassificationDataset
-from .wsi_survival import WSISurvivalDataset
-from .wsi_prototype import WSIProtoDataset

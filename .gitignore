@@ -1,2 +1,3 @@
 *.vscode
 *00_rsync_functionality/*
+archive/*
