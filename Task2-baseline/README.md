@@ -59,7 +59,7 @@ Clinical branch: MLP (SNN-style with SELU and AlphaDropout).
 
 Fusion: Concatenated latent representation from both branches before classification.
 
-
+~~~text
 ⚠️ Before running train_folds.py, make sure to:
 
 Place feature files under data/features/
@@ -77,7 +77,7 @@ Task2-baseline/
 │   └── features/
 ├── results/
 
-
+~~~
 
 ## 📄 Citation
 
