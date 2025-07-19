@@ -14,23 +14,23 @@ The baseline method uses **Attention-Based Multiple Instance Learning (ABMIL)** 
 
 ask2-baseline/
 
-├── configs/                        # YAML configs for ABMIL model
+├── configs/                        ### YAML configs for ABMIL model
 
-├── data_factory/                   # Dataset configuration for classification
+├── data_factory/                   ### Dataset configuration for classification
 
-├── mil_models/                     # ABMIL_Fusion model definitions
+├── mil_models/                     ### ABMIL_Fusion model definitions
 
-├── training/                       # Training loop and trainer logic
+├── training/                       ### Training loop and trainer logic
 
-├── utils/                          # Helper utilities (metrics, schedulers, etc.)
+├── utils/                          ### Helper utilities (metrics, schedulers, etc.)
 
-├── wsi_datasets/                   # WSI + clinical dataset loader
+├── wsi_datasets/                   ### WSI + clinical dataset loader
 
-├── main_classification.py          # Entry point for training
+├── main_classification.py          ### Entry point for training
 
-├── inference.py                    # Script for test-time inference
+├── inference.py                    ### Script for test-time inference
 
-├── requirements.txt                # Python dependencies
+├── requirements.txt                ### Python dependencies
 
 └── README.md                   
 
@@ -46,6 +46,7 @@ pip install -r requirements.txt
 
 
 ### 2. Prepare Data
+
 
 WSIs must be preprocessed into feature representations using slide2vec (https://github.com/clemsgrs/slide2vec/tree/master/slide2vec)
 
@@ -65,7 +66,8 @@ Clinical branch: MLP (SNN-style with SELU and AlphaDropout).
 Fusion: Concatenated latent representation from both branches before classification.
 
 
-######### Citation
+## 📄 Citation
+
 
 If you use this baseline in your work, please cite the CHIMERA challenge:
 
@@ -77,14 +79,16 @@ If you use this baseline in your work, please cite the CHIMERA challenge:
 }
 
 
-######### Acknowledgements
+## Acknowledgements
+
 
 Model structure inspired by MIL frameworks used in computational pathology.
 
 Feature extraction via slide2vec.
 
 
-######### Maintainer
+## Maintainer
+
 
 Nadieh Khalili       nadieh.khalili@radboudumc.nl
 Maryam Mohammadlou   maryam.mohammadlou@tuni.fi
