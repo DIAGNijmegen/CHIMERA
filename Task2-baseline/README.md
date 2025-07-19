@@ -20,6 +20,7 @@ Task2-baseline/
 ├── utils/                 # Helper utilities (metrics, schedulers, etc.)
 ├── wsi_datasets/          # WSI + clinical dataset loader
 ├── main_classification.py # Entry point for training
+├── train_folds.py         # Script to run training over all folds (cross-validation)
 ├── inference.py           # Script for test-time inference
 ├── requirements.txt       # Python dependencies
 └── README.md              # You're here
@@ -72,7 +73,8 @@ If you use this baseline in your work, please cite the CHIMERA challenge:
 }
 
 
-## Acknowledgements
+
+## 🙏 Acknowledgements
 
 
 Model structure inspired by MIL frameworks used in computational pathology.
@@ -80,9 +82,10 @@ Model structure inspired by MIL frameworks used in computational pathology.
 Feature extraction via slide2vec.
 
 
-## Maintainer
+## 👩‍💻 Maintainer
 
-
-Nadieh Khalili       nadieh.khalili@radboudumc.nl
-Maryam Mohammadlou   maryam.mohammadlou@tuni.fi
+``` text
+📧 Nadieh Khalili       nadieh.khalili@radboudumc.nl
+📧 Maryam Mohammadlou   maryam.mohammadlou@tuni.fi
+```
 
