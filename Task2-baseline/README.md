@@ -13,15 +13,25 @@ The baseline method uses **Attention-Based Multiple Instance Learning (ABMIL)** 
 
 
 ask2-baseline/
+
 ├── configs/ # YAML configs for ABMIL model
+
 ├── data_factory/ # Dataset configuration for classification
+
 ├── mil_models/ # ABMIL_Fusion model definitions
+
 ├── training/ # Training loop and trainer logic
+
 ├── utils/ # Helper utilities (metrics, schedulers, etc.)
+
 ├── wsi_datasets/ # WSI + clinical dataset loader
+
 ├── main_classification.py # Entry point for training
+
 ├── inference.py # Script for test-time inference
+
 ├── requirements.txt # Python dependencies
+
 └── README.md # You're here
 
 
@@ -38,7 +48,7 @@ pip install -r requirements.txt
 
 ### 2. Prepare Data
 
-WSIs must be preprocessed into feature representations using slide2vec.
+WSIs must be preprocessed into feature representations using slide2vec (https://github.com/clemsgrs/slide2vec/tree/master/slide2vec)
 
 Clinical data must be in per-patient .json format or as a consolidated CSV with the required fields.
 
