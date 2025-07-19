@@ -14,11 +14,11 @@ in_dim = 1024
 clinical_in_dim = 12 
 epoch = 20
 
-# === PATHS ===
-split_base = '/data/temporary/maryammohamm/FusionModelTask2/clinical_splits_miceforest_encoded'
-data_source = "/data/temporary/maryammohamm/FusionModelTask2/features"
-results_dir = "/data/temporary/maryammohamm/FusionModelTask2/results_PathologyPlusClinical_miceforest/"
-repo_root = "/home/maryammohamm/CHIMERA/Task2-baseline"
+# === PATHS (Update these before running) ===
+split_base = 'data/clinical_splits'          # <-- relative path inside repo
+data_source = 'data/features'                # <-- relative path inside repo
+results_dir = 'results/'                     # <-- output path
+repo_root = os.path.abspath('.')             # <-- current directory is repo root
 
 # === Set PYTHONPATH for local imports to work ===
 os.environ['PYTHONPATH'] = repo_root
