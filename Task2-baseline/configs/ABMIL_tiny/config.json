@@ -1,6 +1,6 @@
 {
   "gate": true,
-  "in_dim": 64,
+  "in_dim": 1024,
   "n_classes": 2,
   "embed_dim": 64,
   "attn_dim": 64,
