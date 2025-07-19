@@ -11,28 +11,21 @@ The baseline method uses **Attention-Based Multiple Instance Learning (ABMIL)** 
 
 📁 Project Structure
 
+```text
+Task2-baseline/
+├── configs/               # YAML configs for ABMIL model
+├── data_factory/          # Dataset configuration for classification
+├── mil_models/            # ABMIL_Fusion model definitions
+├── training/              # Training loop and trainer logic
+├── utils/                 # Helper utilities (metrics, schedulers, etc.)
+├── wsi_datasets/          # WSI + clinical dataset loader
+├── main_classification.py # Entry point for training
+├── inference.py           # Script for test-time inference
+├── requirements.txt       # Python dependencies
+└── README.md              # You're here
+```
 
-ask2-baseline/
-
-├── configs/                       ' YAML configs for ABMIL model'
-
-├── data_factory/                  ' Dataset configuration for classification
-
-├── mil_models/                     ### ABMIL_Fusion model definitions
-
-├── training/                       ### Training loop and trainer logic
-
-├── utils/                          ### Helper utilities (metrics, schedulers, etc.)
-
-├── wsi_datasets/                   ### WSI + clinical dataset loader
-
-├── main_classification.py          ### Entry point for training
-
-├── inference.py                    ### Script for test-time inference
-
-├── requirements.txt                ### Python dependencies
-
-└── README.md                   
+               
 
 
 ---
