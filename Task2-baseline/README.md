@@ -14,9 +14,9 @@ The baseline method uses **Attention-Based Multiple Instance Learning (ABMIL)** 
 
 ask2-baseline/
 
-├── configs/                        ### YAML configs for ABMIL model
+├── configs/                       ' YAML configs for ABMIL model'
 
-├── data_factory/                   ### Dataset configuration for classification
+├── data_factory/                  ' Dataset configuration for classification
 
 ├── mil_models/                     ### ABMIL_Fusion model definitions
 
