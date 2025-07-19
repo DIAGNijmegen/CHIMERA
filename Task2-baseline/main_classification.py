@@ -9,27 +9,25 @@ import pdb
 import os
 from os.path import join as j_
 import sys
-from .trainer import train
+import pandas as pd
+import numpy as np
+import json
+import torch
+from torch.utils.data import DataLoader, sampler
 
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# internal imports
+from training.trainer import train
 from utils.file_utils import save_pkl
 from utils.utils import (seed_torch, array2list, merge_dict, read_splits, 
                          parse_model_name, get_current_time,
                          extract_patching_info)
+from wsi_datasets.wsi_classification import WSIClassificationDataset
+from data_factory.cls_default import tasks, label_dicts
 
 
-from wsi_datasets import WSIClassificationDataset
-from data_factory import tasks, label_dicts
 
-import torch
-from torch.utils.data import DataLoader, sampler
 
-import pandas as pd
-import numpy as np
-import json
 
 
 PROTO_MODELS = ['PANTHER', 'OT', 'H2T', 'ProtoCount']
