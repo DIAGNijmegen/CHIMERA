@@ -31,15 +31,20 @@ class UNI(nn.Module):
                 224 / 256
             )  # Ensure Resize is 256
 
+        # # Initialize tile encoder
+        # model_name = self.config.pop("model_name", "vit_large_patch16_224") # model name not found in config
+        # self.config.pop("architecture", None) # not supported in timm
+        # self.config.pop("num_features", None) # not supported in timm
+        # self.tile_encoder = timm.create_model(
+        #     model_name,
+        #     **self.config,
+        #     mlp_layer=SwiGLUPacked,
+        #     act_layer=torch.nn.SiLU
+        # )
+
         # Initialize tile encoder
-        model_name = self.config.pop("model_name", "vit_large_patch16_224") # model name not found in config
-        self.config.pop("architecture", None) # not supported in timm
-        self.config.pop("num_features", None) # not supported in timm
-        self.tile_encoder = timm.create_model(
-            model_name,
-            **self.config,
-            mlp_layer=SwiGLUPacked,
-            act_layer=torch.nn.SiLU
+        self.tile_encoder = model = timm.create_model(
+            "vit_large_patch16_224", img_size=224, patch_size=16, init_values=1e-5, num_classes=0, dynamic_img_size=True
         )
 
         self.load_weights()
