@@ -1,3 +1,8 @@
 *.vscode
 *00_rsync_functionality/*
-archive/*
+*/archive/*
+*output/
+*/test/*
+*/weights/*
+
+*.zip
