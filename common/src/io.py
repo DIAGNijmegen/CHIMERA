@@ -11,12 +11,13 @@ def load_inputs(input_path: Path = Path("/input/inputs.json")) -> list[dict[str,
     Read information from inputs.json
     """
     input_information_path = Path(input_path)
+    base_dir = input_information_path.parent
     with input_information_path.open("r") as f:
         input_information = json.load(f)
 
     for item in input_information:
         relative_path = item["interface"]["relative_path"]
-        item["input_location"] = Path(f"/input/{relative_path}")
+        item["input_location"] = base_dir / relative_path
 
     return input_information
 

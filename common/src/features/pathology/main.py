@@ -7,6 +7,7 @@ from typing import Any
 
 import numpy as np
 import tqdm
+import torch
 import wholeslidedata as wsd
 from PIL import Image
 
@@ -295,6 +296,7 @@ def run_pathology_vision_task(
     *,
     input_information: dict[str, Any],
     model_dir: Path,
+    output_dir: Path,
 ):
     wsi_path = None
     tissue_mask_path = None
@@ -386,6 +388,6 @@ def run_pathology_vision_task(
         use_mixed_precision=use_mixed_precision,
     )
 
-    output_path = Path("/output/features.pt")
+    output_path = output_dir / "features.pt"
     save_features_to_pt(feature=feature, output_path=output_path)
 

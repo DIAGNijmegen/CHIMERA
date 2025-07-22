@@ -47,8 +47,7 @@ def main():
 
     inputs_json_path = args.input_dir / "inputs.json"
     input_information = load_inputs(
-        input_path=inputs_json_path, 
-        base_dir=args.input_dir
+        input_path=inputs_json_path
     )
 
     run_pathology_vision_task(

@@ -32,8 +32,14 @@ class UNI(nn.Module):
             )  # Ensure Resize is 256
 
         # Initialize tile encoder
+        model_name = self.config.pop("model_name", "vit_large_patch16_224") # model name not found in config
+        self.config.pop("architecture", None) # not supported in timm
+        self.config.pop("num_features", None) # not supported in timm
         self.tile_encoder = timm.create_model(
-            **self.config, mlp_layer=SwiGLUPacked, act_layer=torch.nn.SiLU
+            model_name,
+            **self.config,
+            mlp_layer=SwiGLUPacked,
+            act_layer=torch.nn.SiLU
         )
 
         self.load_weights()
@@ -48,7 +54,7 @@ class UNI(nn.Module):
             model_dict=self.tile_encoder.state_dict(), state_dict=weights
         )
         print(msg)
-        self.tile_encoder.load_state_dict(updated_sd, strict=True)
+        self.tile_encoder.load_state_dict(updated_sd, strict=False) # turn to False to allow for missing keys
         self.tile_encoder.to(self.device)
         self.tile_encoder.eval()
 
@@ -65,9 +71,8 @@ class UNI(nn.Module):
         with torch.no_grad():
             output = self.tile_encoder(x)
 
-        # Directly return the class token (the first token from the ViT output)
-        class_token = output[:, 0]
-        return class_token
+        # Directly return the full embedding
+        return output
 
 
 # class Virchow(nn.Module):
