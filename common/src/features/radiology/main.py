@@ -13,7 +13,7 @@ from .dataset import discover_cases
 from .models import load_model_configuration, get_network_parameters
 from .processing import process_single_case
 
-def main():
+def run_radiology_feature_extraction(input_dir: Path, output_dir: Path, model_dir: Path):
     """Main execution function to run the inference pipeline."""
     print("=" * 80)
     print("🧠 nnU-Net v1 Modular Inference & Feature Extraction Script")
@@ -25,18 +25,11 @@ def main():
     # ============================================================================
     EXTRACT_FEATURES = True
     PROBABILITY_THRESHOLD = 0.35
-    INPUT_DIRECTORY = "/data/pa_cpgarchive/projects/chimera/prostate/test_data/input/interf0"
-    OUTPUT_DIRECTORY = "/data/temporary/chimera/prostate/inference_output/radiology"
-    MODEL_FOLDER = "/data/pa_cpgarchive/projects/chimera/algorithms/baseline/weights/pi-cai_nnUnet"
     FOLDS_TO_USE = [0, 1, 2, 3, 4]
 
     # ============================================================================
     # SETUP AND VALIDATION
     # ============================================================================
-    input_dir = Path(INPUT_DIRECTORY)
-    output_dir = Path(OUTPUT_DIRECTORY) 
-    model_dir = Path(MODEL_FOLDER)
-
     if not input_dir.exists():
         print(f"❌ ERROR: Input directory does not exist: {input_dir}")
         return
@@ -104,4 +97,14 @@ def main():
     print("=" * 80)
 
 if __name__ == "__main__":
-    main()
+    # This part is for standalone execution, you can adapt it for your needs
+    # For example, by using argparse to get the directories
+    INPUT_DIRECTORY = "/data/pa_cpgarchive/projects/chimera/prostate/test_data/input/interf0"
+    OUTPUT_DIRECTORY = "/data/temporary/chimera/prostate/inference_output/radiology"
+    MODEL_FOLDER = "/data/pa_cpgarchive/projects/chimera/algorithms/baseline/weights/pi-cai_nnUnet"
+    
+    run_radiology_feature_extraction(
+        input_dir=Path(INPUT_DIRECTORY),
+        output_dir=Path(OUTPUT_DIRECTORY),
+        model_dir=Path(MODEL_FOLDER)
+    )

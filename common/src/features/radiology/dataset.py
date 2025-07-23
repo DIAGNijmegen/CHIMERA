@@ -260,7 +260,7 @@ def save_detection_map(detection_map: np.ndarray, original_scan: sitk.Image, cas
 
 def save_features(features: np.ndarray, case_id: str, output_folder: Path) -> None:
     """Save extracted features to output folder as .pt file."""
-    output_path = output_folder / f"{case_id}_features.pt"
+    output_path = output_folder / "features.pt"
     
     # Ensure the output directory for the PT file exists.
     output_path.parent.mkdir(parents=True, exist_ok=True)
