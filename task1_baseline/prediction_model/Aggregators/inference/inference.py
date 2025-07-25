@@ -15,7 +15,6 @@ prediction_model_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(prediction_model_root))
 
 # --- Import from our helper modules ---
-from task1_baseline.prediction_model.Aggregators.inference.feature_extractor import run_feature_extraction
 from task1_baseline.prediction_model.Aggregators.inference.model_loader import load_model_and_assets
 from task1_baseline.prediction_model.Aggregators.inference.feature_loader import load_features
 from task1_baseline.prediction_model.Aggregators.inference.prediction import run_inference_and_calibrate
@@ -35,19 +34,109 @@ def run_complete_pipeline(input_dir: Path, output_dir: Path, model_dir: Path):
     pathology_model_path = model_dir / "pathology"
     radiology_model_path = model_dir / "radiology"
     prediction_model_path = model_dir / "ABMIL_task1"
+
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
         print(f"Created temporary directory for features: {temp_path}")
+        
+        feature_output_dir = temp_path / "features"
+        feature_output_dir.mkdir(parents=True, exist_ok=True)
+        pathology_feature_dir = feature_output_dir / "pathology"
+        pathology_feature_dir.mkdir(parents=True, exist_ok=True)
+        radiology_feature_dir = feature_output_dir / "radiology"
+        radiology_feature_dir.mkdir(parents=True, exist_ok=True)
+
         try:
-            print("--- Step 1: Running Feature Extraction ---")
-            feature_output_dir = run_feature_extraction(input_dir=input_dir, output_dir=temp_path, pathology_model_dir=pathology_model_path, radiology_model_dir=radiology_model_path)
-            print("✅ Feature extraction complete.")
+            # --- Radiology Feature Extraction (run once) ---
+            print("--- Step 1a: Running Radiology Feature Extraction ---")
+            from common.src.features.radiology.main import run_radiology_feature_extraction
+            run_radiology_feature_extraction(
+                input_dir=input_dir,
+                output_dir=radiology_feature_dir,
+                model_dir=radiology_model_path
+            )
+            print("✅ Radiology feature extraction complete.")
+
+            # --- Pathology Feature Extraction (run in a loop for each WSI) ---
+            print("\n--- Step 1b: Running Pathology Feature Extraction ---")
+            from common.src.features.pathology.main import run_pathology_vision_task
+            from common.src.io import load_inputs, resolve_image_path
+            from common.src.features.pathology.models import UNI
+
+            # Initialize the pathology model once
+            feature_extractor = UNI(model_dir=pathology_model_path)
+            print(f"Initialized feature extractor: {type(feature_extractor).__name__}")
+
+            inputs_json_path = input_dir / "inputs.json"
+            input_information = load_inputs(input_path=inputs_json_path)
+            
+            wsi_inputs = [
+                item for item in input_information 
+                if 'prostatectomy-tissue-whole-slide-image' in item['interface']['slug'] 
+                and item['interface']['super_kind'] == 'Image' 
+                and item['interface']['kind'] == 'Image'
+            ]
+            
+            print(f"Found {len(wsi_inputs)} pathology slides to process.")
+
+            for i, wsi_input in enumerate(wsi_inputs):
+                wsi_slug = wsi_input['interface']['slug']
+                print(f"  Processing WSI {i+1}/{len(wsi_inputs)}: {wsi_slug}")
+
+                if wsi_slug == 'prostatectomy-tissue-whole-slide-image':
+                    mask_slug = 'prostatectomy-tissue-mask'
+                else:
+                    mask_slug = f"{wsi_slug}-2"
+                
+                mask_input = next((item for item in input_information if item['interface']['slug'] == mask_slug), None)
+
+                if not mask_input:
+                    print(f"  ⚠️  Warning: Could not find a mask for {wsi_slug}. Skipping.")
+                    continue
+                
+                wsi_path = resolve_image_path(location=wsi_input["input_location"])
+                mask_path = resolve_image_path(location=mask_input["input_location"])
+
+                with tempfile.TemporaryDirectory() as slide_temp_dir:
+                    slide_temp_path = Path(slide_temp_dir)
+                    run_pathology_vision_task(
+                        wsi_path=wsi_path,
+                        tissue_mask_path=mask_path,
+                        model=feature_extractor,
+                        output_dir=slide_temp_path
+                    )
+                    
+                    # Move and rename the feature file
+                    source_feature_file = slide_temp_path / 'features.pt'
+                    if source_feature_file.exists():
+                        target_feature_file = pathology_feature_dir / f"features_{i}.pt"
+                        source_feature_file.rename(target_feature_file)
+                        print(f"    -> Saved features to {target_feature_file}")
+                    else:
+                        print(f"    -> ⚠️  Warning: No features were extracted for {wsi_slug}.")
+
+            print("✅ Pathology feature extraction complete.")
+
             print("\n--- Step 2: Loading Prediction Model and Assets ---")
             model, clinical_processor, calibration_data = load_model_and_assets(prediction_model_path, input_dir)
+            
             print("\n--- Step 3: Loading All Extracted Features ---")
-            path_feats, rad_feats, clin_feats = load_features(case_id="chimera-clinical-data-of-prostate-cancer-patients", pathology_features_dir=feature_output_dir / "pathology", radiology_features_dir=feature_output_dir / "radiology", clinical_processor=clinical_processor)
+            path_feats, rad_feats, clin_feats = load_features(
+                case_id="chimera-clinical-data-of-prostate-cancer-patients", 
+                pathology_features_dir=pathology_feature_dir, 
+                radiology_features_dir=radiology_feature_dir, 
+                clinical_processor=clinical_processor
+            )
             print("✅ All features loaded.")
-            predicted_time_months = run_inference_and_calibrate(model=model, pathology_features=path_feats, radiology_features=rad_feats, clinical_features=clin_feats, calibration_data=calibration_data)
+
+            predicted_time_months = run_inference_and_calibrate(
+                model=model, 
+                pathology_features=path_feats, 
+                radiology_features=rad_feats, 
+                clinical_features=clin_feats, 
+                calibration_data=calibration_data
+            )
+
             print("\n--- Step 6: Saving Final Prediction ---")
             final_output_path = output_dir / "time-to-biochemical-recurrence-for-prostate-cancer-months.json"
             with open(final_output_path, "w") as f:

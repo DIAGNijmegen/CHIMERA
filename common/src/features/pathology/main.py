@@ -294,34 +294,11 @@ def save_features_to_pt(feature: torch.Tensor, output_path: Path):
 
 def run_pathology_vision_task(
     *,
-    input_information: dict[str, Any],
-    model_dir: Path,
+    wsi_path: Path,
+    tissue_mask_path: Path,
+    model: torch.nn.Module,
     output_dir: Path,
 ):
-    wsi_path = None
-    tissue_mask_path = None
-
-    # Loop through inputs to find the specific pathology WSI and its mask by slug
-    for input_socket in input_information:
-        slug = input_socket["interface"]["slug"]
-        
-        # Uniquely identify the WSI by its slug
-        if slug == "prostatectomy-tissue-whole-slide-image":
-            wsi_path = resolve_image_path(location=input_socket["input_location"])
-            print(f"Found WSI via slug: {wsi_path}")
-            
-        # Uniquely identify the WSI's tissue mask by its slug
-        elif slug == "prostatectomy-tissue-mask":
-            tissue_mask_path = resolve_image_path(
-                location=input_socket["input_location"]
-            )
-            print(f"Found WSI tissue mask via slug: {tissue_mask_path}")
-
-    # Add a check to ensure we found the required files
-    if wsi_path is None:
-        raise FileNotFoundError("Could not find the 'prostatectomy-tissue-whole-slide-image' in the input files.")
-    if tissue_mask_path is None:
-        raise FileNotFoundError("Could not find the 'prostatectomy-tissue-mask' in the input files.")
 
     batch_size = 32
     use_mixed_precision = False
@@ -374,9 +351,9 @@ def run_pathology_vision_task(
 
     print("=+=" * 10)
 
-    feature_extractor = UNI(model_dir=model_dir)
-    print(f"Initialized feature extractor: {type(feature_extractor).__name__}")
-
+    # The feature extractor is now passed in directly
+    feature_extractor = model
+    
     # Extract tile or slide features
     feature = extract_features(
         wsi_path=wsi_path,

@@ -4,6 +4,7 @@
 *output/
 */test/*
 */weights/*
+input_jsons/*
 
 *.zip
 tools/*

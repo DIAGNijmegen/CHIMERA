@@ -2,35 +2,16 @@
 import sys
 from pathlib import Path
 
-from common.src.features.pathology.main import run_pathology_vision_task
 from common.src.features.radiology.main import run_radiology_feature_extraction
-from common.src.io import load_inputs
 
-def run_feature_extraction(input_dir: Path, output_dir: Path, pathology_model_dir: Path, radiology_model_dir: Path):
+def run_feature_extraction(input_dir: Path, output_dir: Path, radiology_model_dir: Path):
     """Runs the full feature extraction pipeline for both modalities."""
     # --- Create a temporary directory for features ---
     feature_output_dir = output_dir / "features"
     feature_output_dir.mkdir(parents=True, exist_ok=True)
 
-    pathology_output_dir = feature_output_dir / "pathology"
-    pathology_output_dir.mkdir(parents=True, exist_ok=True)
-
     radiology_output_dir = feature_output_dir / "radiology"
     radiology_output_dir.mkdir(parents=True, exist_ok=True)
-
-    # --- Run Pathology Feature Extraction ---
-    print("🚀 Starting Feature Extraction for Pathology")
-    inputs_json_path = input_dir / "inputs.json"
-    if not inputs_json_path.exists():
-        raise FileNotFoundError(f"The required 'inputs.json' file was not found in the input directory: {input_dir}")
-    
-    input_information = load_inputs(input_path=inputs_json_path)
-    run_pathology_vision_task(
-        input_information=input_information,
-        model_dir=pathology_model_dir,
-        output_dir=pathology_output_dir
-    )
-    print("✅ Pathology feature extraction complete!")
 
     # --- Run Radiology Feature Extraction ---
     print("🚀 Starting Feature Extraction for Radiology")
