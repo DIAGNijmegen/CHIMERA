@@ -1,10 +1,10 @@
 import os
-from mil_models import ABMIL, ABMIL_FUSION
-from mil_models import ABMILConfig
+from task1_baseline.prediction_model.Aggregators.mil_models import ABMIL, ABMIL_FUSION
+from task1_baseline.prediction_model.Aggregators.mil_models import ABMILConfig
 
 import pdb
 import torch
-from utils.file_utils import save_pkl, load_pkl
+from task1_baseline.prediction_model.Aggregators.utils.file_utils import save_pkl, load_pkl
 from os.path import join as j_
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

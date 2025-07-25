@@ -5,7 +5,7 @@ import json
 import argparse
 from pathlib import Path
 
-from Aggregators.mil_models import create_downstream_model
+from task1_baseline.prediction_model.Aggregators.mil_models import create_downstream_model
 
 def load_model_and_assets(model_path: Path, clinical_data_path: Path):
     """

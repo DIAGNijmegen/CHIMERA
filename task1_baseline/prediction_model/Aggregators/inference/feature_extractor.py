@@ -2,10 +2,6 @@
 import sys
 from pathlib import Path
 
-# --- Add Project Root to Python Path ---
-project_root = Path(__file__).resolve().parents[5]
-sys.path.append(str(project_root))
-
 from common.src.features.pathology.main import run_pathology_vision_task
 from common.src.features.radiology.main import run_radiology_feature_extraction
 from common.src.io import load_inputs
@@ -23,9 +19,11 @@ def run_feature_extraction(input_dir: Path, output_dir: Path, pathology_model_di
     radiology_output_dir.mkdir(parents=True, exist_ok=True)
 
     # --- Run Pathology Feature Extraction ---
-    print("---*10")
     print("🚀 Starting Feature Extraction for Pathology")
     inputs_json_path = input_dir / "inputs.json"
+    if not inputs_json_path.exists():
+        raise FileNotFoundError(f"The required 'inputs.json' file was not found in the input directory: {input_dir}")
+    
     input_information = load_inputs(input_path=inputs_json_path)
     run_pathology_vision_task(
         input_information=input_information,
@@ -35,7 +33,6 @@ def run_feature_extraction(input_dir: Path, output_dir: Path, pathology_model_di
     print("✅ Pathology feature extraction complete!")
 
     # --- Run Radiology Feature Extraction ---
-    print("---*10")
     print("🚀 Starting Feature Extraction for Radiology")
     run_radiology_feature_extraction(
         input_dir=input_dir,

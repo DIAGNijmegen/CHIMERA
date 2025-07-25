@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch
 from tqdm import tqdm
 
-from utils.losses import NLLSurvLoss, CoxLoss, SurvRankingLoss
+from task1_baseline.prediction_model.Aggregators.utils.losses import NLLSurvLoss, CoxLoss, SurvRankingLoss
 from sksurv.util import Surv
 
 def create_mlp(in_dim=None, hid_dims=[], act=nn.ReLU(), dropout=0.,
