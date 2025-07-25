@@ -4,6 +4,7 @@ import argparse
 import json
 import sys
 import tempfile
+import time
 import traceback
 from pathlib import Path
 
@@ -30,6 +31,7 @@ def run_complete_pipeline(input_dir: Path, output_dir: Path, model_dir: Path):
     This is the core, end-to-end pipeline. It runs feature extraction from
     raw data and then predicts time-to-event using the trained models.
     """
+    start_time = time.time()
     output_dir.mkdir(parents=True, exist_ok=True)
     pathology_model_path = model_dir / "pathology"
     radiology_model_path = model_dir / "radiology"
@@ -142,6 +144,12 @@ def run_complete_pipeline(input_dir: Path, output_dir: Path, model_dir: Path):
             with open(final_output_path, "w") as f:
                 json.dump(float(predicted_time_months), f, indent=4)
             print(f"✅ Successfully saved prediction to {final_output_path}")
+
+            # --- Final Timing ---
+            end_time = time.time()
+            total_time = end_time - start_time
+            print(f"\n🏁 Total pipeline execution time: {int(total_time // 3600):02d}:{int((total_time % 3600) // 60):02d}:{int(total_time % 60):02d}")
+
             return 0
         except Exception as e:
             print(f"❌ An error occurred during the pipeline: {e}")
