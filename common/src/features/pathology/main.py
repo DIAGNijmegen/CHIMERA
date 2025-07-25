@@ -328,7 +328,7 @@ def run_pathology_vision_task(
     spacing = 0.5
     tolerance = 0.05 # tolerance to consider two spacings equal (e.g. if tolerance is 0.10, any spacing between [0.45, 0.55] is considered equal to 0.5)
     tile_size = 224
-    max_number_of_tiles = 30000 # limit number of tiles to comply with time limits and GPU memory
+    max_number_of_tiles = 3000 # limit number of tiles to comply with time limits and GPU memory
 
     num_workers = min(mp.cpu_count(), 8)
     if "SLURM_JOB_CPUS_PER_NODE" in os.environ:
