@@ -17,7 +17,7 @@ clinical_dim = 13
 # Paths to data
 pathology_features = "/data/temporary/maryammohamm/FusionModelTask3/feats_pt"
 rna_path = "/data/temporary/maryammohamm/FusionModelTask3/rna_data_row.csv"
-clinical_path = "/data/temporary/maryammohamm/FusionModelTask3/task3_clinical_features_encoded.csv"
+clinical_path = "/data/temporary/maryammohamm/FusionModelTask3/task3_clinical_all"
 results_dir = "/data/temporary/maryammohamm/FusionModelTask3/results_PathologyPlusRNA/"
 split_path = clinical_path
 
