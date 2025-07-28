@@ -5,6 +5,8 @@
 */test/*
 */weights/*
 input_jsons/*
-
+*/model/*
 *.zip
 tools/*
+.dockerignore
+*/tar_files/*

@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from task1_baseline.prediction_model.Aggregators.mil_models import ABMIL, ABMIL_FUSION
 from task1_baseline.prediction_model.Aggregators.mil_models import ABMILConfig
 
@@ -9,13 +10,18 @@ from os.path import join as j_
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-
-
-def create_downstream_model(args, mode='classification', config_dir='/data/temporary/nadieh/PANTHER/src/configs'):
+def create_downstream_model(args, mode='classification', config_dir=None):
     """
     Create downstream modles for classification or survival
     """
-    config_path = os.path.join(config_dir, args.model_config, 'config.json')
+    if config_dir is None:
+        # This makes the path robust to where the script is run from.
+        # It constructs the path relative to this file's location.
+        # .../mil_models/ -> .../Aggregators/ -> .../Aggregators/configs
+        base_dir = Path(__file__).resolve().parent.parent
+        config_dir = base_dir / 'configs'
+
+    config_path = os.path.join(str(config_dir), args.model_config, 'config.json')
     assert os.path.exists(config_path), f"Config path {config_path} doesn't exist!"
     
     model_config = args.model_config
@@ -100,7 +106,7 @@ def prepare_emb(datasets, args, mode='classification'):
     """
    
     ### Preparing file path for saving embeddings
-    print('\nConstructing unsupervised slide embedding...', end=' ')
+    print('Constructing unsupervised slide embedding...', end=' ')
     embeddings_kwargs = {
         'feats': args.data_source[0].split('/')[-2],
         'model_type': args.model_type,
@@ -123,7 +129,7 @@ def prepare_emb(datasets, args, mode='classification'):
     if os.path.isfile(embeddings_fpath):
         embeddings = load_pkl(embeddings_fpath)
         for k, loader in datasets.items():
-            print(f'\n\tEmbedding already exists! Loading {k}', end=' ')
+            print(f'Embedding already exists! Loading {k}', end=' ')
             loader.dataset.X, loader.dataset.y = embeddings[k]['X'], embeddings[k]['y']
     else:
         os.makedirs(j_(args.split_dir, 'embeddings'), exist_ok=True)
@@ -133,7 +139,7 @@ def prepare_emb(datasets, args, mode='classification'):
         ### Extracts prototypical features per split
         embeddings = {}
         for split, loader in datasets.items():
-            print(f"\nAggregating {split} set features...")
+            print(f"Aggregating {split} set features...")
             X, y = model.predict(loader,
                                  use_cuda=torch.cuda.is_available()
                                  )

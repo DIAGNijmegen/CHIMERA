@@ -15,7 +15,7 @@ import h5py
 from .dataset_utils import apply_sampling
 from .clinical_processor import ClinicalDataProcessor
 sys.path.append('../')
-from utils.pandas_helper_funcs import df_sdir, series_diff
+from task1_baseline.prediction_model.Aggregators.utils.pandas_helper_funcs import df_sdir, series_diff
 
 class WSISurvivalDataset(Dataset):
     """WSI Survival Dataset."""

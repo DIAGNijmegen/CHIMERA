@@ -99,10 +99,10 @@ def run_radiology_feature_extraction(input_dir: Path, output_dir: Path, model_di
 if __name__ == "__main__":
     # This part is for standalone execution, you can adapt it for your needs
     # For example, by using argparse to get the directories
-    INPUT_DIRECTORY = "/data/pa_cpgarchive/projects/chimera/prostate/test_data/input/interf0"
-    OUTPUT_DIRECTORY = "/data/temporary/chimera/prostate/inference_output/radiology"
-    MODEL_FOLDER = "/data/pa_cpgarchive/projects/chimera/algorithms/baseline/weights/pi-cai_nnUnet"
-    
+    INPUT_DIRECTORY = "/path/to/input/interf0"
+    OUTPUT_DIRECTORY = "/path/to/output/radiology"
+    MODEL_FOLDER = "/path/to/model/weights"
+
     run_radiology_feature_extraction(
         input_dir=Path(INPUT_DIRECTORY),
         output_dir=Path(OUTPUT_DIRECTORY),

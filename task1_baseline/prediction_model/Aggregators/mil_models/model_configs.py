@@ -60,6 +60,7 @@ class ABMILConfig(PretrainedConfig):
     clinical_dim: int = 0  # Dimension for clinical features
     clinical_hidden_dim: int = 128  # Hidden dimension for clinical MLP
     clinical_layers: int = 2  # Number of layers in clinical MLP
+    post_attention_dim: int = 128 # Dimension after attention
 
 @dataclass
 class OTConfig(PretrainedConfig):

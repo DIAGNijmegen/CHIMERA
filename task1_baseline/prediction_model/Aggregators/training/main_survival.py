@@ -9,15 +9,20 @@ import pdb
 import os
 from os.path import join as j_
 import sys
+from pathlib import Path
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# --- Add Project Root to Python Path ---
+# (Assumes this script is in a subdirectory of the project)
+project_root = Path(__file__).resolve().parents[4]
+sys.path.insert(0, str(project_root))
+
 # internal imports
-from utils.file_utils import save_pkl
-from utils.utils import (seed_torch, array2list, merge_dict, read_splits, 
+from task1_baseline.prediction_model.Aggregators.utils.file_utils import save_pkl
+from task1_baseline.prediction_model.Aggregators.utils.utils import (seed_torch, array2list, merge_dict, read_splits, 
                          parse_model_name, get_current_time, extract_patching_info)
 
-from trainer import train
-from wsi_datasets import WSISurvivalDataset
+from task1_baseline.prediction_model.Aggregators.training.trainer import train
+from task1_baseline.prediction_model.Aggregators.wsi_datasets import WSISurvivalDataset
 # pytorch imports
 import torch
 from torch.utils.data import DataLoader

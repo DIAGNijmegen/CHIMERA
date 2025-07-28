@@ -7,7 +7,7 @@ import sys
 # This is the corrected line that goes up two directories to the project root.
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from Aggregators.wsi_datasets.clinical_processor import ClinicalDataProcessor
+from task1_baseline.prediction_model.Aggregators.wsi_datasets.clinical_processor import ClinicalDataProcessor
 
 def main(args):
     """

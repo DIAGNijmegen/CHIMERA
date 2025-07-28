@@ -17,9 +17,9 @@ except ImportError:
 from sklearn.metrics import (roc_auc_score, balanced_accuracy_score,
                              cohen_kappa_score, classification_report, accuracy_score)
 
-from mil_models import create_downstream_model
-from utils.losses import NLLSurvLoss, CoxLoss, SurvRankingLoss
-from utils.utils import (EarlyStopping, save_checkpoint, AverageMeter,
+from task1_baseline.prediction_model.Aggregators.mil_models import create_downstream_model
+from task1_baseline.prediction_model.Aggregators.utils.losses import NLLSurvLoss, CoxLoss, SurvRankingLoss
+from task1_baseline.prediction_model.Aggregators.utils.utils import (EarlyStopping, save_checkpoint, AverageMeter,
                          get_optim, print_network, get_lr_scheduler)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
