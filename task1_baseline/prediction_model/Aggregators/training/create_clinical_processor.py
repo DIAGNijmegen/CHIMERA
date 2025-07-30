@@ -3,9 +3,12 @@ import os
 import argparse
 import sys
 
+from pathlib import Path
+
 # Add the project's base directory to the Python path so we can import our custom modules
-# This is the corrected line that goes up two directories to the project root.
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+# This goes up four directories to the project root (CHIMERA).
+project_root = Path(__file__).resolve().parents[4]
+sys.path.insert(0, str(project_root))
 
 from task1_baseline.prediction_model.Aggregators.wsi_datasets.clinical_processor import ClinicalDataProcessor
 

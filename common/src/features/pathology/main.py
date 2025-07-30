@@ -300,7 +300,7 @@ def run_pathology_vision_task(
     output_dir: Path,
 ):
 
-    batch_size = 32
+    batch_size = 64
     use_mixed_precision = False
     spacing = 0.5
     tolerance = 0.05 # tolerance to consider two spacings equal (e.g. if tolerance is 0.10, any spacing between [0.45, 0.55] is considered equal to 0.5)

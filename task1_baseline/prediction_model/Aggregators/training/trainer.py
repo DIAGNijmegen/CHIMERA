@@ -7,6 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
+import wandb
 
 try:
     from sksurv.metrics import concordance_index_censored
@@ -100,6 +101,10 @@ def train(datasets, args, mode='classification'):
 
         writer = log_dict_tensorboard(writer, train_results, 'train/', epoch)
 
+        # ADDED: Log training metrics to wandb if a sweep is active
+        if wandb.run is not None:
+            wandb.log({f'train/{k}': v for k, v in train_results.items()}, step=epoch)
+
         ### Validation Loop (Optional)
         if 'val' in datasets.keys():
             print('#' * 11, f'VAL Epoch: {epoch}', '#' * 11)
@@ -113,28 +118,32 @@ def train(datasets, args, mode='classification'):
                                                    print_every=args.print_every, verbose=True, show_batch_progress=True)
 
             writer = log_dict_tensorboard(writer, val_results, 'val/', epoch)
+            
+            # ADDED: Log validation metrics to wandb if a sweep is active
+            if wandb.run is not None:
+                wandb.log({f'val/{k}': v for k, v in val_results.items()}, step=epoch)
 
             ### Check Early Stopping (Optional)
             if early_stopper is not None:
-                if args.es_metric == 'loss':
-                    score = val_results['loss']
+                # MODIFIED: Use .get() for safer score retrieval to prevent crashes
+                score = val_results.get('loss', val_results.get('surv_loss'))
 
-                else:
-                    raise NotImplementedError
-                save_ckpt_kwargs = dict(config=vars(args),
-                                        epoch=epoch,
-                                        model=model,
-                                        score=score,
-                                        fname=f's_checkpoint.pth')
-                stop = early_stopper(epoch, score, save_checkpoint, save_ckpt_kwargs)
-                if stop:
-                    break
+                if score is not None:
+                    save_ckpt_kwargs = dict(config=vars(args),
+                                            epoch=epoch,
+                                            model=model,
+                                            score=score,
+                                            fname=f's_checkpoint.pth')
+                    if early_stopper(epoch, score, save_checkpoint, save_ckpt_kwargs):
+                        break
         print('#' * (22 + len(f'TRAIN Epoch: {epoch}')), '\n')
 
     ### End of epoch: Load in the best model (or save the latest model with not early stopping)
     if args.early_stopping:
+        print("Loading best model from early stopping.")
         model.load_state_dict(torch.load(j_(args.results_dir, f"s_checkpoint.pth"))['model'])
     else:
+        print("Saving final model state.")
         torch.save(model.state_dict(), j_(args.results_dir, f"s_checkpoint.pth"))
 
     ### End of epoch: Evaluate on val and test set
@@ -152,6 +161,11 @@ def train(datasets, args, mode='classification'):
 
         # Log all results including train split
         log_dict_tensorboard(writer, results[k], f'final/{k}_', 0, verbose=True)
+
+        # ADDED: Log final metrics to W&B summary
+        if wandb.run is not None:
+            for metric, val in results[k].items():
+                wandb.summary[f'final/{k}_{metric}'] = val
 
     writer.close()
     return results, dumps
@@ -233,7 +247,6 @@ def validate_classification(model, loader,
         attn_mask = batch['attn_mask'].to(device) if ('attn_mask' in batch) else None
         model_kwargs = {'attn_mask': attn_mask, 'label': label, 'loss_fn': loss_fn}
         out, log_dict = model(data, model_kwargs)
-        
 
         # End of iteration classification-specific metrics to calculate / log
         logits = out['logits']
@@ -383,15 +396,14 @@ def train_loop_survival(model, loader, optimizer, lr_scheduler, loss_fn=None, in
             optimizer.zero_grad()
 
         # End of iteration survival-specific metrics to calculate / log
-        # Only collect metrics when we have valid output
         if 'risk' in out:
             all_risk_scores.append(out['risk'].detach().cpu().numpy())
-        elif 'logits' in out:
+        elif 'logits' in out and out['logits'] is not None:
             # For Cox loss, logits are log risks, so convert to risk
             all_risk_scores.append(torch.exp(out['logits']).detach().cpu().numpy())
         else:
             # Fallback for accumulation phase
-            all_risk_scores.append(torch.zeros(1, 1).numpy())
+            all_risk_scores.append(np.zeros((data.size(0), 1)))
                 
         all_censorships.append(censorship.cpu().numpy())
         all_event_times.append(event_time.cpu().numpy())
@@ -411,9 +423,9 @@ def train_loop_survival(model, loader, optimizer, lr_scheduler, loss_fn=None, in
             print(msg)
 
     # End of epoch survival-specific metrics to calculate / log
-    all_risk_scores = np.concatenate(all_risk_scores).squeeze(1)
-    all_censorships = np.concatenate(all_censorships).squeeze(1)
-    all_event_times = np.concatenate(all_event_times).squeeze(1)
+    all_risk_scores = np.concatenate(all_risk_scores).squeeze()
+    all_censorships = np.concatenate(all_censorships).squeeze()
+    all_event_times = np.concatenate(all_event_times).squeeze()
     c_index = concordance_index_censored(
         (1 - all_censorships).astype(bool), all_event_times, all_risk_scores, tied_tol=1e-08)[0]
     results = {k: meter.avg for k, meter in meters.items()}
@@ -436,7 +448,6 @@ def validate_survival(model, loader,
     meters = {'bag_size': AverageMeter()}
     bag_size_meter = meters['bag_size']
     all_risk_scores, all_censorships, all_event_times = [], [], []
-
 
     for batch_idx, batch in enumerate(loader):
         data = batch['img'].to(device)
@@ -476,9 +487,10 @@ def validate_survival(model, loader,
             print(msg)
 
     # End of epoch survival-specific metrics to calculate / log
-    all_risk_scores = np.concatenate(all_risk_scores).squeeze(1)
-    all_censorships = np.concatenate(all_censorships).squeeze(1)
-    all_event_times = np.concatenate(all_event_times).squeeze(1)
+    # MODIFIED: Use .squeeze() for more robust array reshaping
+    all_risk_scores = np.concatenate(all_risk_scores).squeeze()
+    all_censorships = np.concatenate(all_censorships).squeeze()
+    all_event_times = np.concatenate(all_event_times).squeeze()
 
     c_index = concordance_index_censored(
         (1 - all_censorships).astype(bool), all_event_times, all_risk_scores, tied_tol=1e-08)[0]

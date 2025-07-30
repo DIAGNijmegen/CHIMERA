@@ -16,13 +16,11 @@ from scipy.optimize import curve_fit
 from tqdm import tqdm
 
 # --- Add Project Root to Python Path ---
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-aggregators_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.insert(0, project_root)
-sys.path.insert(0, aggregators_path)
+project_root = Path(__file__).resolve().parents[4]
+sys.path.insert(0, str(project_root))
 
-from Aggregators.mil_models import create_downstream_model
-from Aggregators.wsi_datasets.clinical_processor import ClinicalDataProcessor
+from task1_baseline.prediction_model.Aggregators.mil_models import create_downstream_model
+from task1_baseline.prediction_model.Aggregators.wsi_datasets.clinical_processor import ClinicalDataProcessor
 
 def load_all_features_for_case(case_id, path_dir, rad_dir, clinical_processor):
     """Loads all pre-computed features for a single case."""
