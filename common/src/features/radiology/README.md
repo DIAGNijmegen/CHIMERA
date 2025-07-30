@@ -1,13 +1,13 @@
 # Radiology Feature Extraction Module 🧠
 
-This module (`common/src/features/radiology/`) is responsible for extracting features from multimodal Magnetic Resonance Imaging (MRI) scans using a pre-trained nnU-Net v1 model ensemble. It serves as a critical preprocessing step for downstream multimodal fusion models.
+This module (`common/src/features/radiology/`) is responsible for extracting features from multimodal Magnetic Resonance Imaging (MRI) scans using a pre-trained nnU-Net v1 model ensemble. It serves as a critical preprocessing step for the downstream multimodal fusion model in **Task 1** of the CHIMERA challenge.
 
 ## Purpose
 
 The primary goal of this module is to:
-1.  **Process MRI Scans:** Discover and handle different MRI modalities (T2-weighted, ADC, and HBV).
+1.  **Process MRI Scans:** Discover and handle different MRI modalities (T2-weighted, ADC, and HBV) for prostate cancer cases.
 2.  **Extract Deep Features:** Utilize an ensemble of pre-trained nnU-Net models to generate feature vectors from the encoder bottleneck.
-3.  **Prepare Features for Downstream Tasks:** Output the extracted features in a `.pt` file, ready for use in machine learning models for tasks like survival prediction or classification.
+3.  **Prepare Features for Downstream Tasks:** Output the extracted features in a `.pt` file, ready for use in the Task 1 machine learning model for predicting biochemical recurrence.
 
 ## Key Components
 
@@ -20,7 +20,7 @@ The primary goal of this module is to:
 
 ## Standalone Feature Extraction for Training Data
 
-To extract features from your local training dataset, you can use the `stand_alone_feature_extractor.py` script. This script is designed to be run from the command line.
+To extract features from your local training dataset for Task 1, you can use the `stand_alone_feature_extractor.py` script. This script is designed to be run from the command line.
 
 After downloading the radiology model weights and placing them in the `common/model/radiology/` directory (as explained in the `task1_baseline/README.md`), you can run the script as follows:
 

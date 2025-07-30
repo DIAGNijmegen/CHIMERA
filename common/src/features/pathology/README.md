@@ -1,13 +1,13 @@
 # Pathology Feature Extraction Module 🔬
 
-This module (`common/src/features/pathology/`) is dedicated to the robust extraction of visual features from Whole Slide Images (WSIs) for pathology tasks. It serves as a foundational component for downstream prediction models, such as those found in `task1_baseline/prediction_model/Aggregators/inference/inference.py`.
+This module (`common/src/features/pathology/`) is dedicated to the robust extraction of visual features from Whole Slide Images (WSIs). It serves as a foundational component for the downstream prediction models used across all CHIMERA challenge tasks.
 
 ## Purpose
 
 The primary goal of this module is to:
 1.  **Process Whole Slide Images:** Handle WSI loading, tissue segmentation, and tile extraction.
-2.  **Extract Tile-Level Features:** Utilize pre-trained vision models to generate high-dimensional feature vectors from individual image tiles.
-3.  **Prepare Features for Downstream Tasks:** Output these extracted features in a format suitable for machine learning models that perform tasks like survival prediction or classification.
+2.  **Extract Tile-Level Features:** Utilize a pre-trained vision model (UNI) to generate high-dimensional feature vectors from individual image tiles.
+3.  **Prepare Features for Downstream Tasks:** Output these extracted features in a format suitable for various machine learning models that perform tasks like survival prediction or classification across the different CHIMERA tasks.
 
 ## Key Components
 
@@ -20,15 +20,15 @@ The primary goal of this module is to:
 
 ## Integration with Inference Pipelines
 
-The `common/src/features/pathology/` module is a critical dependency for the main inference scripts across different tasks. For instance, in `task1_baseline/prediction_model/Aggregators/inference/inference.py`, the `run_complete_pipeline` function explicitly calls `common.src.features.pathology.main.run_pathology_vision_task`.
+The `common/src/features/pathology/` module is a critical dependency for the main inference scripts across all tasks. The main inference script for each task (e.g., in `task1_baseline`, `task2-baseline`, etc.) calls this module to process the WSI data.
 
 Here's how it typically integrates:
 
-1.  **Initialization:** An instance of a pathology feature extractor (e.g., `UNI` from `models.py`) is initialized within the main inference script.
+1.  **Initialization:** An instance of the `UNI` pathology feature extractor from `models.py` is initialized within the main inference script.
 2.  **Feature Extraction Loop:** For each WSI requiring processing, the `run_pathology_vision_task` function is invoked. This function takes the WSI path, its corresponding tissue mask path, and the initialized feature extractor model as input.
-3.  **Output:** The `run_pathology_vision_task` function generates a `.pt` file containing the extracted features for the WSI. These features are then collected and used by the downstream prediction model (e.g., the ABMIL model in `task1_baseline`).
+3.  **Output:** The `run_pathology_vision_task` function generates a `.pt` file containing the extracted features for the WSI. These features are then collected and used by the downstream prediction model for the specific task. (e.g., the ABMIL model in `task1_baseline`).  
 
-This modular design ensures that the complex process of pathology WSI feature extraction is encapsulated and reusable across various tasks (e.g., `task2-baseline`, `task3-baseline`), promoting consistency and maintainability.
+This modular design ensures that the complex process of pathology WSI feature extraction is encapsulated and reusable across all CHIMERA tasks, promoting consistency and maintainability.
 
 ## Input Data
 
