@@ -1,0 +1,5 @@
+{
+  "gate": true,
+  "in_dim": 1024,
+  "n_classes": 2
+  }
