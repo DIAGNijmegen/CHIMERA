@@ -1,1 +1,25 @@
+# Core scientific stack
+numpy
+pandas
+scikit-learn
+tqdm
+
+# Deep learning
+torch
+torchvision
+torchaudio
+
+# Image & WSI handling
+Pillow
+openslide-python
+opencv-python
+
+# Slide2Vec + UNI feature extraction
+slide2vec @ git+https://github.com/DIAGNijmegen/slide2vec.git
+transformers
+huggingface_hub
+
+# Plotting (optional, for debug)
+matplotlib
+seaborn
 
