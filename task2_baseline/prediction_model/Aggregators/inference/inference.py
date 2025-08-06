@@ -8,7 +8,7 @@ from prediction_model.Aggregators.inference.prediction import predict_case
 
 INPUT_DIRECTORY = Path("/input")
 OUTPUT_DIRECTORY = Path("/output")
-MODEL_DIRECTORY = Path("/model_weights")
+MODEL_DIRECTORY = Path("/opt/ml/model")
 
 # GC interface slugs
 WSI_SLUG = "prostatectomy-tissue-whole-slide-image"
