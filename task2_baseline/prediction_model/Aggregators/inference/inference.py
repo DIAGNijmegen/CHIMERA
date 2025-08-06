@@ -22,7 +22,9 @@ def main():
 
     # Detect feature dimension
     example_case = clinical_df.iloc[0]["case_id"]
-    pathology_input_dim = torch.load(MODEL_DIRECTORY / f"{example_case}.pt").shape[1]
+    pathology_input_dim = torch.load(
+        MODEL_DIRECTORY / "pathology_features" / f"{example_case}.pt"
+    ).shape[1]
     clinical_input_dim = len(clinical_df.columns) - 2  # minus case_id + label
 
     # Load model
