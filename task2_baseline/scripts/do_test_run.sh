@@ -1,35 +1,34 @@
 #!/bin/bash
 set -e
 
-# ================================================
+# =========================================================
 # CHIMERA Task 2 - Local Docker Test Script
-# ================================================
-# This script will:
-# 1. Build or use your Task 2 Docker container
-# 2. Mount local input/output/model directories
-# 3. Run inference using the GC-style pipeline
-# ================================================
+# =========================================================
+# This simulates how Grand Challenge will run your container
+# =========================================================
 
-# --- SETTINGS ---
+# --- Paths ---
 PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
 
-# Path to your local test input data (must match GC interface format)
+# Local test input (must follow GC interface structure)
 INPUT_DIR="${PROJECT_ROOT}/test/input"
 
-# Path where predictions will be saved
+# Local output folder (will be cleared each run)
 OUTPUT_DIR="${PROJECT_ROOT}/test/output"
 
-# Path to your trained Task 2 model weights (local machine)
-# This folder must contain:
+# Your trained model weights (local folder)
+# Must contain:
 #   best_model.pth
 #   config.json
+#   clinical_data.csv
+#   pathology_features/CASE_ID.pt files
 #   clinical_processor.pkl (optional)
 MODEL_DIR="/home/maryam/my_task2_model_weights"
 
-# Docker image name
+# Docker image name (built with do_build.sh)
 DOCKER_IMAGE="chimera-task2-prediction"
 
-# --- CHECKS ---
+# --- Checks ---
 if [ ! -d "${INPUT_DIR}" ]; then
     echo "[ERROR] INPUT_DIR not found: ${INPUT_DIR}"
     exit 1
@@ -39,11 +38,11 @@ if [ ! -d "${MODEL_DIR}" ]; then
     exit 1
 fi
 
-# --- CLEAN OUTPUT DIR ---
+# --- Prepare output folder ---
 rm -rf "${OUTPUT_DIR}"
 mkdir -p "${OUTPUT_DIR}"
 
-# --- RUN CONTAINER ---
+# --- Run container ---
 echo "[INFO] Running Task 2 container..."
 docker run --rm \
     --runtime=nvidia \
@@ -53,4 +52,4 @@ docker run --rm \
     --volume "${MODEL_DIR}":/opt/ml/model:ro \
     ${DOCKER_IMAGE}
 
-echo "[INFO] Inference complete. Results saved to: ${OUTPUT_DIR}"
+echo "[INFO] Inference complete. Predictions saved to: ${OUTPUT_DIR}"
