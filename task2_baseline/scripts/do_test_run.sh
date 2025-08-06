@@ -19,7 +19,8 @@ DOCKER_NOOP_VOLUME="${DOCKER_IMAGE_TAG}-volume"
 INPUT_DIR="${TASK_ROOT}/test/input"
 OUTPUT_DIR="${TASK_ROOT}/test/output"
 # Define MODEL directory relative to the PROJECT_ROOT
-MODEL_DIR="${PROJECT_ROOT}/common/model"
+MODEL_DIR=MODEL_DIR="/path/to/my_task2_model_weights"
+
 
 echo "=+= (Re)building the container with the correct context..."
 # This sources the updated build script from its location
