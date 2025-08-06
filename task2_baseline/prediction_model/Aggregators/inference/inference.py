@@ -1,12 +1,13 @@
 # Aggregators/inference/inference.py
 import json
 import pandas as pd
-import torch  # FIX: needed for torch.load and torch.tensor
+import torch
 from pathlib import Path
 from prediction_model.Aggregators.inference.feature_loader import load_features
 from prediction_model.Aggregators.inference.model_loader import load_model
 from prediction_model.Aggregators.inference.prediction import predict_case
 
+# GC mount points
 INPUT_DIRECTORY = Path("/input")
 OUTPUT_DIRECTORY = Path("/output")
 MODEL_DIRECTORY = Path("/opt/ml/model")
@@ -18,37 +19,40 @@ PROB_SLUG = "brs3-probability"
 def main():
     print("[INFO] Starting Task 2 Classification Inference...")
 
-    # Load clinical table (processed CSV must be inside container or pre-generated)
-    clinical_df = pd.read_csv(MODEL_DIRECTORY / "clinical_data.csv")
+    # --- Step 1: Load clinical data ---
+    clinical_csv_path = MODEL_DIRECTORY / "clinical_data.csv"
+    if not clinical_csv_path.exists():
+        raise FileNotFoundError(f"Missing clinical_data.csv in {MODEL_DIRECTORY}")
+    clinical_df = pd.read_csv(clinical_csv_path)
 
-    # Detect feature dimension from example case
+    # --- Step 2: Detect feature dimensions ---
     example_case = clinical_df.iloc[0]["case_id"]
     example_feature_path = MODEL_DIRECTORY / "pathology_features" / f"{example_case}.pt"
     if not example_feature_path.exists():
-        raise FileNotFoundError(f"Example feature file not found: {example_feature_path}")
+        raise FileNotFoundError(f"Missing example pathology feature file: {example_feature_path}")
 
     pathology_input_dim = torch.load(example_feature_path).shape[1]
     clinical_input_dim = len(clinical_df.columns) - 2  # minus case_id + label
 
-    # Load model
+    # --- Step 3: Load model ---
     model, clinical_processor = load_model(
         model_dir=MODEL_DIRECTORY,
         clinical_input_dim=clinical_input_dim,
         pathology_input_dim=pathology_input_dim
     )
 
-    # Read GC predictions.json
+    # --- Step 4: Read GC jobs ---
     predictions_file = INPUT_DIRECTORY / "predictions.json"
     if not predictions_file.exists():
-        raise FileNotFoundError(f"predictions.json not found at {predictions_file}")
-
+        raise FileNotFoundError(f"Missing predictions.json in {INPUT_DIRECTORY}")
     with open(predictions_file, "r") as f:
         jobs = json.load(f)
 
-    # Process each case
+    # --- Step 5: Process each case ---
     for job in jobs:
         case_id = get_case_id(job)
 
+        # Load features for case
         pathology_features, clinical_features = load_features(
             pathology_features_dir=MODEL_DIRECTORY / "pathology_features",
             clinical_df=clinical_df,
@@ -62,7 +66,7 @@ def main():
                 dtype=torch.float32
             )
 
-        # Predict
+        # Predict probability and label
         prob, pred_label = predict_case(model, pathology_features, clinical_features)
 
         # Save GC-compatible probability JSON
