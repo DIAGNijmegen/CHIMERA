@@ -4,15 +4,6 @@ import torch
 def predict_case(model, pathology_features, clinical_features):
     """
     Predict BRS3 probability and label for a single case (Task 2 classification).
-    
-    Args:
-        model: Trained ABMIL_Fusion model.
-        pathology_features: Tensor of extracted pathology features (num_patches x feature_dim).
-        clinical_features: Tensor of processed clinical features (num_clinical_features).
-    
-    Returns:
-        prob_brs3 (float): Probability of BRS3 (positive class).
-        pred_label (int): Predicted label (1 = BRS3, 0 = BRS1/2).
     """
     model.eval()
 
