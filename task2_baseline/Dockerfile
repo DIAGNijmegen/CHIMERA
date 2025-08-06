@@ -81,7 +81,7 @@ COPY --chown=user:user . /opt/app/
 ENV PYTHONPATH=/opt/app
 
 # --- 6. Execution ---
-CMD ["python", "task1_baseline/prediction_model/Aggregators/inference/inference.py"]
+CMD ["python", "task2_baseline/prediction_model/Aggregators/inference/inference.py"]
 
 
 
