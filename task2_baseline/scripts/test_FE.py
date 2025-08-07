@@ -1,3 +1,5 @@
+# task2_baseline/scripts/test_FE.py
+
 import argparse
 import sys
 import time
@@ -9,7 +11,6 @@ sys.path.append(str(project_root))
 
 # Import pathology feature extraction logic
 from common.src.features.pathology.main import run_pathology_vision_task
-from common.src.io import load_inputs
 
 
 def run_pathology_pipeline(args):
@@ -24,13 +25,10 @@ def run_pathology_pipeline(args):
     print(f"💾 Output Directory: {pathology_output_dir}")
     print("---" * 10)
 
-    inputs_json_path = args.input_dir / "inputs.json"
-    input_information = load_inputs(input_path=inputs_json_path)
-
     run_pathology_vision_task(
-        input_information=input_information,
-        model_dir=args.pathology_model_dir,
-        output_dir=pathology_output_dir
+        input_dir=args.input_dir,
+        output_dir=pathology_output_dir,
+        model_dir=args.pathology_model_dir
     )
 
     print("---" * 10)
