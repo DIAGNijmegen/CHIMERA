@@ -3,28 +3,48 @@
 import torch
 import pandas as pd
 from pathlib import Path
+from prediction_model.Aggregators.inference.feature_extractor import extract_pathology_features
 
+# Grand Challenge input slugs
+WSI_SLUG = "prostatectomy-tissue-whole-slide-image"
+MASK_SLUG = "tissue-mask"
 
-def load_features(pathology_features_dir: Path, clinical_df: pd.DataFrame, case_id: str):
+def load_features(
+    input_dir: Path,
+    model_dir: Path,
+    clinical_df: pd.DataFrame,
+    case_id: str
+):
     """
-    Load pathology features (.pt) and clinical features for a given case.
+    Dynamically extract pathology features + load clinical features for a given case.
 
     Parameters:
-    - pathology_features_dir: Path to directory with .pt files (e.g., /output/pathology_features/)
-    - clinical_df: Preprocessed DataFrame with rows for each case (same order and normalization as training)
-    - case_id: Sample ID to fetch features for
+    - input_dir: Path to mounted /input folder with images/<slug>/<filename>.tiff
+    - model_dir: Path to mounted /opt/ml/model folder
+    - clinical_df: Pre-loaded clinical dataframe
+    - case_id: Current sample ID (filename without .tiff)
 
     Returns:
-    - pathology_features: Tensor of shape (num_tiles, feature_dim)
-    - clinical_feats: Tensor of shape (num_clinical_features,)
+    - pathology_features: Tensor (N_patches, feature_dim)
+    - clinical_feats: Tensor (num_clinical_features,)
     """
-    # --- Pathology features ---
-    feat_path = pathology_features_dir / f"{case_id}.pt"
-    if not feat_path.exists():
-        raise FileNotFoundError(f"Feature file not found: {feat_path}")
-    pathology_features = torch.load(feat_path, map_location="cpu").float()
+    # --- Get WSI + mask paths from expected locations ---
+    wsi_path = input_dir / "images" / WSI_SLUG / f"{case_id}.tiff"
+    mask_path = input_dir / "images" / MASK_SLUG / f"{case_id}.tiff"
 
-    # --- Clinical features ---
+    if not wsi_path.exists():
+        raise FileNotFoundError(f"Missing WSI file: {wsi_path}")
+    if not mask_path.exists():
+        raise FileNotFoundError(f"Missing mask file: {mask_path}")
+
+    # --- Extract pathology features in memory ---
+    pathology_features = extract_pathology_features(
+        wsi_path=wsi_path,
+        mask_path=mask_path,
+        model_dir=model_dir
+    )
+
+    # --- Extract clinical features ---
     matching_rows = clinical_df[clinical_df["case_id"] == case_id]
     if matching_rows.empty:
         raise ValueError(f"Case ID '{case_id}' not found in clinical DataFrame")
@@ -35,5 +55,3 @@ def load_features(pathology_features_dir: Path, clinical_df: pd.DataFrame, case_
     )
 
     return pathology_features, clinical_feats
-
-
