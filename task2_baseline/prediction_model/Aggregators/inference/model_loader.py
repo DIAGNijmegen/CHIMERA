@@ -4,7 +4,7 @@ import torch
 import pickle
 import json
 from pathlib import Path
-from prediction_model.Aggregators.mil_models.model_abmil_fusion import ABMIL_Fusion
+from prediction_model.Aggregators.inference.abmil_infer_model import ABMIL_Fusion
 
 
 def load_model(model_dir: Path, clinical_input_dim: int, pathology_input_dim: int):
