@@ -31,11 +31,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1 \
  && update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
 
-# ---- ASAP (optional; keep if your path code needs it) ----
+# ---- ASAP (optional) ----
 ARG ASAP_URL=https://github.com/computationalpathologygroup/ASAP/releases/download/ASAP-2.2-(Nightly)/ASAP-2.2-Ubuntu2204.deb
 RUN curl -L ${ASAP_URL} -o /tmp/ASAP.deb \
  && apt-get update && apt-get install -y --no-install-recommends /tmp/ASAP.deb \
- && python - <<'PY'\nimport sysconfig, pathlib; p = pathlib.Path(sysconfig.get_paths()['purelib'])/'asap.pth'; p.write_text('/opt/ASAP/bin\\n')\nPY \
+ && python -c "import sysconfig, pathlib; pathlib.Path(sysconfig.get_paths()['purelib']).joinpath('asap.pth').write_text('/opt/ASAP/bin\n')" \
  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/ASAP.deb
 
 # ---- dirs ----
@@ -47,11 +47,9 @@ WORKDIR /opt/app
 
 ENV PATH="/home/user/.local/bin:${PATH}"
 ENV PYTHONPATH=/opt/app
-# Your pinned requirements include scikit-learn meta shim; keep this to avoid warnings
 ENV SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True
 
 # ---- Python deps ----
-# Build context is CHIMERA/, so this path is valid
 COPY --chown=user:user task2_baseline/requirements.txt /opt/app/
 RUN python -m pip install --upgrade pip \
  && python -m pip install --no-cache-dir -r /opt/app/requirements.txt \
@@ -61,14 +59,12 @@ RUN python -m pip install --upgrade pip \
 COPY --chown=user:user . /opt/app/
 
 # ---- copy trained model + clinical processor into fixed path used by code ----
-# Files must exist in CHIMERA/common/model/ABMIL_task2/
 COPY --chown=user:user common/model/ABMIL_task2/s_checkpoint.pth       /opt/ml/model/s_checkpoint.pth
 COPY --chown=user:user common/model/ABMIL_task2/clinical_processor.pkl /opt/ml/model/clinical_processor.pkl
 COPY --chown=user:user common/model/ABMIL_task2/config.json            /opt/ml/model/config.json
 
-# Quick sanity during build (optional)
+# quick sanity
 RUN ls -lah /opt/ml/model
 
 # ---- default command ----
-# Wrapper that calls prediction_model.Aggregators.inference.inference.main
 CMD ["python", "task2_baseline/inference.py"]
