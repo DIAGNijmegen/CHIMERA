@@ -1,6 +1,5 @@
 # =====================================================================================
-# Dockerfile for CHIMERA Task 2 Inference (Dockerfile is in task2_baseline/)
-# Build context MUST be CHIMERA/ root (see do_build.sh)
+# Dockerfile — CHIMERA Task 2 Inference (Dockerfile in task2_baseline/, context = CHIMERA/)
 # =====================================================================================
 
 ARG UBUNTU_VERSION=22.04
@@ -25,14 +24,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libtiff-dev zlib1g-dev curl wget git \
+    libtiff-dev zlib1g-dev curl wget git ca-certificates \
     python3.10 python3.10-dev python3.10-distutils python3.10-venv python3-pip \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1 \
  && update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
 
-# ---- ASAP (if needed) ----
+# ---- ASAP (optional; keep if your path code needs it) ----
 ARG ASAP_URL=https://github.com/computationalpathologygroup/ASAP/releases/download/ASAP-2.2-(Nightly)/ASAP-2.2-Ubuntu2204.deb
 RUN curl -L ${ASAP_URL} -o /tmp/ASAP.deb \
  && apt-get update && apt-get install -y --no-install-recommends /tmp/ASAP.deb \
@@ -48,28 +47,28 @@ WORKDIR /opt/app
 
 ENV PATH="/home/user/.local/bin:${PATH}"
 ENV PYTHONPATH=/opt/app
+# Your pinned requirements include scikit-learn meta shim; keep this to avoid warnings
 ENV SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True
 
 # ---- Python deps ----
-# Copy requirements from task2_baseline
+# Build context is CHIMERA/, so this path is valid
 COPY --chown=user:user task2_baseline/requirements.txt /opt/app/
 RUN python -m pip install --upgrade pip \
  && python -m pip install --no-cache-dir -r /opt/app/requirements.txt \
  && rm -rf /home/user/.cache/pip
 
 # ---- copy code (both common/ and task2_baseline/) ----
-# Because build context is CHIMERA/, this copies the whole repo into /opt/app
 COPY --chown=user:user . /opt/app/
 
-# ---- copy trained model + clinical processor into fixed path ----
-# These come from CHIMERA/common/model/ABMIL_task2/
-COPY --chown=user:user ../common/model/ABMIL_task2/s_checkpoint.pth       /opt/ml/model/s_checkpoint.pth
-COPY --chown=user:user ../common/model/ABMIL_task2/clinical_processor.pkl /opt/ml/model/clinical_processor.pkl
-COPY --chown=user:user ../common/model/ABMIL_task2/config.json            /opt/ml/model/config.json
+# ---- copy trained model + clinical processor into fixed path used by code ----
+# Files must exist in CHIMERA/common/model/ABMIL_task2/
+COPY --chown=user:user common/model/ABMIL_task2/s_checkpoint.pth       /opt/ml/model/s_checkpoint.pth
+COPY --chown=user:user common/model/ABMIL_task2/clinical_processor.pkl /opt/ml/model/clinical_processor.pkl
+COPY --chown=user:user common/model/ABMIL_task2/config.json            /opt/ml/model/config.json
 
-# quick sanity
+# Quick sanity during build (optional)
 RUN ls -lah /opt/ml/model
 
-# ---- entrypoint ----
-# Use the small wrapper that calls your module
+# ---- default command ----
+# Wrapper that calls prediction_model.Aggregators.inference.inference.main
 CMD ["python", "task2_baseline/inference.py"]
