@@ -1,0 +1,37 @@
+# sweep.yaml
+method: bayes
+metric:
+  name: final/test_c_index
+  goal: maximize
+
+parameters:
+  lr:
+    # Use the new format: log_uniform_values
+    distribution: log_uniform_values
+    min: 1.0e-5  # The actual minimum learning rate
+    max: 1.0e-3  # The actual maximum learning rate
+  
+  lr_scheduler:
+    values: ['cosine', 'constant', 'linear']
+  
+  max_epochs:
+    values: [5, 10]
+  
+  wd:
+    # Use the new format: log_uniform_values
+    distribution: log_uniform_values
+    min: 1.0e-5  # The actual minimum weight decay
+    max: 1.0e-2  # The actual maximum weight decay
+
+  opt:
+    values: ['adamW', 'RAdam']
+  
+  in_dropout:
+    distribution: uniform
+    min: 0.0
+    max: 0.5
+  
+  nll_alpha:
+    distribution: uniform
+    min: 0.0
+    max: 1.0

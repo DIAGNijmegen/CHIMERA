@@ -1,0 +1,12 @@
+*.vscode
+*00_rsync_functionality/*
+*/archive/*
+*output/
+*/test/*
+*/weights/*
+input_jsons/*
+*/model/*
+*.zip
+tools/*
+.dockerignore
+*/tar_files/*
