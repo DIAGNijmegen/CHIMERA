@@ -50,7 +50,6 @@ ABMIL_CHIMERA/
 ├── training.py                   # Example runner for training
 ├── inference.py                  # Example inference script
 ├── check_val_predictions.py      # Check predictions on validation set
-└── 0708.sbatch                    # SLURM submission script example
 
 
 
