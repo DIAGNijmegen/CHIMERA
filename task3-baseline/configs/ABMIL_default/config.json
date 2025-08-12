@@ -1,0 +1,9 @@
+{
+  "gate": true,   # current ABMIL_Fusion_RNA class does not yet use gate, attn_dim, n_fc_layers, or dropout; later I will change model to use them.
+  "in_dim": 1024,
+  "n_classes": 1,   
+  "embed_dim": 512, 
+  "attn_dim": 384,
+  "n_fc_layers": 1,
+  "dropout": 0.25
+}

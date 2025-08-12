@@ -1,0 +1,96 @@
+Looking in indexes: https://pypi.org/simple, https://pypi.ngc.nvidia.com
+Collecting transformers
+  Downloading transformers-4.54.0-py3-none-any.whl.metadata (41 kB)
+Collecting openpyxl
+  Downloading openpyxl-3.1.5-py2.py3-none-any.whl.metadata (2.5 kB)
+Collecting lifelines
+  Downloading lifelines-0.30.0-py3-none-any.whl.metadata (3.2 kB)
+Requirement already satisfied: filelock in /usr/local/lib/python3.10/dist-packages (from transformers) (3.16.1)
+Collecting huggingface-hub<1.0,>=0.34.0 (from transformers)
+  Downloading huggingface_hub-0.34.1-py3-none-any.whl.metadata (14 kB)
+Requirement already satisfied: numpy>=1.17 in /usr/local/lib/python3.10/dist-packages (from transformers) (1.24.4)
+Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.10/dist-packages (from transformers) (23.2)
+Requirement already satisfied: pyyaml>=5.1 in /usr/local/lib/python3.10/dist-packages (from transformers) (6.0.2)
+Requirement already satisfied: regex!=2019.12.17 in /usr/local/lib/python3.10/dist-packages (from transformers) (2024.9.11)
+Requirement already satisfied: requests in /usr/local/lib/python3.10/dist-packages (from transformers) (2.32.3)
+Collecting tokenizers<0.22,>=0.21 (from transformers)
+  Downloading tokenizers-0.21.2-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.8 kB)
+Requirement already satisfied: safetensors>=0.4.3 in /usr/local/lib/python3.10/dist-packages (from transformers) (0.4.5)
+Requirement already satisfied: tqdm>=4.27 in /usr/local/lib/python3.10/dist-packages (from transformers) (4.65.0)
+Collecting et-xmlfile (from openpyxl)
+  Downloading et_xmlfile-2.0.0-py3-none-any.whl.metadata (2.7 kB)
+Requirement already satisfied: scipy>=1.7.0 in /usr/local/lib/python3.10/dist-packages (from lifelines) (1.9.1)
+Collecting pandas>=2.1 (from lifelines)
+  Downloading pandas-2.3.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (91 kB)
+Requirement already satisfied: matplotlib>=3.0 in /usr/local/lib/python3.10/dist-packages (from lifelines) (3.7.1)
+Collecting autograd>=1.5 (from lifelines)
+  Downloading autograd-1.8.0-py3-none-any.whl.metadata (7.5 kB)
+Collecting autograd-gamma>=0.3 (from lifelines)
+  Downloading autograd-gamma-0.5.0.tar.gz (4.0 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting formulaic>=0.2.2 (from lifelines)
+  Downloading formulaic-1.2.0-py3-none-any.whl.metadata (7.0 kB)
+Collecting interface-meta>=1.2.0 (from formulaic>=0.2.2->lifelines)
+  Downloading interface_meta-1.3.0-py3-none-any.whl.metadata (6.7 kB)
+Collecting narwhals>=1.17 (from formulaic>=0.2.2->lifelines)
+  Downloading narwhals-1.48.1-py3-none-any.whl.metadata (11 kB)
+Requirement already satisfied: typing-extensions>=4.2.0 in /usr/local/lib/python3.10/dist-packages (from formulaic>=0.2.2->lifelines) (4.12.2)
+Requirement already satisfied: wrapt>=1.0 in /usr/local/lib/python3.10/dist-packages (from formulaic>=0.2.2->lifelines) (1.16.0)
+Requirement already satisfied: fsspec>=2023.5.0 in /usr/local/lib/python3.10/dist-packages (from huggingface-hub<1.0,>=0.34.0->transformers) (2024.6.1)
+Collecting hf-xet<2.0.0,>=1.1.3 (from huggingface-hub<1.0,>=0.34.0->transformers)
+  Downloading hf_xet-1.1.5-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (879 bytes)
+Requirement already satisfied: contourpy>=1.0.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib>=3.0->lifelines) (1.3.0)
+Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.10/dist-packages (from matplotlib>=3.0->lifelines) (0.12.1)
+Requirement already satisfied: fonttools>=4.22.0 in /usr/local/lib/python3.10/dist-packages (from matplotlib>=3.0->lifelines) (4.54.1)
+Requirement already satisfied: kiwisolver>=1.0.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib>=3.0->lifelines) (1.4.7)
+Requirement already satisfied: pillow>=6.2.0 in /home/maryammohamm/.local/lib/python3.10/site-packages (from matplotlib>=3.0->lifelines) (11.3.0)
+Requirement already satisfied: pyparsing>=2.3.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib>=3.0->lifelines) (3.1.4)
+Requirement already satisfied: python-dateutil>=2.7 in /usr/local/lib/python3.10/dist-packages (from matplotlib>=3.0->lifelines) (2.9.0.post0)
+Requirement already satisfied: pytz>=2020.1 in /usr/local/lib/python3.10/dist-packages (from pandas>=2.1->lifelines) (2023.4)
+Requirement already satisfied: tzdata>=2022.7 in /usr/local/lib/python3.10/dist-packages (from pandas>=2.1->lifelines) (2024.1)
+Requirement already satisfied: charset-normalizer<4,>=2 in /usr/local/lib/python3.10/dist-packages (from requests->transformers) (3.3.2)
+Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.10/dist-packages (from requests->transformers) (3.7)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.10/dist-packages (from requests->transformers) (2.0.7)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.10/dist-packages (from requests->transformers) (2024.8.30)
+Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.10/dist-packages (from python-dateutil>=2.7->matplotlib>=3.0->lifelines) (1.16.0)
+Downloading transformers-4.54.0-py3-none-any.whl (11.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.2/11.2 MB 128.0 MB/s eta 0:00:00
+Downloading openpyxl-3.1.5-py2.py3-none-any.whl (250 kB)
+Downloading lifelines-0.30.0-py3-none-any.whl (349 kB)
+Downloading autograd-1.8.0-py3-none-any.whl (51 kB)
+Downloading formulaic-1.2.0-py3-none-any.whl (117 kB)
+Downloading huggingface_hub-0.34.1-py3-none-any.whl (558 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 558.8/558.8 kB 247.7 MB/s eta 0:00:00
+Downloading pandas-2.3.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (12.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.3/12.3 MB 241.4 MB/s eta 0:00:00
+Downloading tokenizers-0.21.2-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.1/3.1 MB 193.0 MB/s eta 0:00:00
+Downloading et_xmlfile-2.0.0-py3-none-any.whl (18 kB)
+Downloading hf_xet-1.1.5-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.1/3.1 MB 146.7 MB/s eta 0:00:00
+Downloading interface_meta-1.3.0-py3-none-any.whl (14 kB)
+Downloading narwhals-1.48.1-py3-none-any.whl (377 kB)
+Building wheels for collected packages: autograd-gamma
+  Building wheel for autograd-gamma (setup.py): started
+  Building wheel for autograd-gamma (setup.py): finished with status 'done'
+  Created wheel for autograd-gamma: filename=autograd_gamma-0.5.0-py3-none-any.whl size=4030 sha256=75654650c3b5b7dae91751fea1c7a890b16ad4c9e809d7e93b0c71f86ccb9b28
+  Stored in directory: /tmp/pip-ephem-wheel-cache-bpds_3h5/wheels/25/cc/e0/ef2969164144c899fedb22b338f6703e2b9cf46eeebf254991
+Successfully built autograd-gamma
+Installing collected packages: narwhals, interface-meta, hf-xet, et-xmlfile, autograd, pandas, openpyxl, huggingface-hub, autograd-gamma, tokenizers, formulaic, transformers, lifelines
+  Attempting uninstall: pandas
+    Found existing installation: pandas 2.0.1
+    Uninstalling pandas-2.0.1:
+      Successfully uninstalled pandas-2.0.1
+  Attempting uninstall: huggingface-hub
+    Found existing installation: huggingface-hub 0.26.2
+    Uninstalling huggingface-hub-0.26.2:
+      Successfully uninstalled huggingface-hub-0.26.2
+Successfully installed autograd-1.8.0 autograd-gamma-0.5.0 et-xmlfile-2.0.0 formulaic-1.2.0 hf-xet-1.1.5 huggingface-hub-0.34.1 interface-meta-1.3.0 lifelines-0.30.0 narwhals-1.48.1 openpyxl-3.1.5 pandas-2.3.1 tokenizers-0.21.2 transformers-4.54.0
+✅ Loaded 176 clinical samples
+✅ Fold 0: 140 train / 36 test
+✅ Fold 1: 141 train / 35 test
+✅ Fold 2: 141 train / 35 test
+✅ Fold 3: 141 train / 35 test
+✅ Fold 4: 141 train / 35 test
+✅ All folds saved to: /data/temporary/maryammohamm/FusionModelTask3/split_clinical
